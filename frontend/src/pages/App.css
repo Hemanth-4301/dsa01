@@ -57,189 +57,99 @@
   }
 }
 
-.pencil {
-  display: block;
-  width: 10em;
-  height: 10em;
+.spinner {
+  position: absolute;
+  width: 9px;
+  height: 9px;
 }
 
-.pencil__body1,
-.pencil__body2,
-.pencil__body3,
-.pencil__eraser,
-.pencil__eraser-skew,
-.pencil__point,
-.pencil__rotate,
-.pencil__stroke {
-  animation-duration: 3s;
-  animation-timing-function: linear;
-  animation-iteration-count: infinite;
+.spinner div {
+  position: absolute;
+  width: 50%;
+  height: 150%;
+  background: #000000;
+  transform: rotate(calc(var(--rotation) * 1deg))
+    translate(0, calc(var(--translation) * 1%));
+  animation: spinner-fzua35 1s calc(var(--delay) * 1s) infinite ease;
 }
 
-.pencil__body1,
-.pencil__body2,
-.pencil__body3 {
-  transform: rotate(-90deg);
+.spinner div:nth-child(1) {
+  --delay: 0.1;
+  --rotation: 36;
+  --translation: 150;
 }
 
-.pencil__body1 {
-  animation-name: pencilBody1;
+.spinner div:nth-child(2) {
+  --delay: 0.2;
+  --rotation: 72;
+  --translation: 150;
 }
 
-.pencil__body2 {
-  animation-name: pencilBody2;
+.spinner div:nth-child(3) {
+  --delay: 0.3;
+  --rotation: 108;
+  --translation: 150;
 }
 
-.pencil__body3 {
-  animation-name: pencilBody3;
+.spinner div:nth-child(4) {
+  --delay: 0.4;
+  --rotation: 144;
+  --translation: 150;
 }
 
-.pencil__eraser {
-  animation-name: pencilEraser;
-  transform: rotate(-90deg) translate(49px, 0);
+.spinner div:nth-child(5) {
+  --delay: 0.5;
+  --rotation: 180;
+  --translation: 150;
 }
 
-.pencil__eraser-skew {
-  animation-name: pencilEraserSkew;
-  animation-timing-function: ease-in-out;
+.spinner div:nth-child(6) {
+  --delay: 0.6;
+  --rotation: 216;
+  --translation: 150;
 }
 
-.pencil__point {
-  animation-name: pencilPoint;
-  transform: rotate(-90deg) translate(49px, -30px);
+.spinner div:nth-child(7) {
+  --delay: 0.7;
+  --rotation: 252;
+  --translation: 150;
 }
 
-.pencil__rotate {
-  animation-name: pencilRotate;
+.spinner div:nth-child(8) {
+  --delay: 0.8;
+  --rotation: 288;
+  --translation: 150;
 }
 
-.pencil__stroke {
-  animation-name: pencilStroke;
-  transform: translate(100px, 100px) rotate(-113deg);
+.spinner div:nth-child(9) {
+  --delay: 0.9;
+  --rotation: 324;
+  --translation: 150;
 }
 
-/* Animations */
-@keyframes pencilBody1 {
-  from,
-  to {
-    stroke-dashoffset: 351.86;
-    transform: rotate(-90deg);
-  }
-
-  50% {
-    stroke-dashoffset: 150.8;
-    /* 3/8 of diameter */
-    transform: rotate(-225deg);
-  }
+.spinner div:nth-child(10) {
+  --delay: 1;
+  --rotation: 360;
+  --translation: 150;
 }
 
-@keyframes pencilBody2 {
-  from,
-  to {
-    stroke-dashoffset: 406.84;
-    transform: rotate(-90deg);
-  }
-
-  50% {
-    stroke-dashoffset: 174.36;
-    transform: rotate(-225deg);
-  }
-}
-
-@keyframes pencilBody3 {
-  from,
-  to {
-    stroke-dashoffset: 296.88;
-    transform: rotate(-90deg);
-  }
-
-  50% {
-    stroke-dashoffset: 127.23;
-    transform: rotate(-225deg);
-  }
-}
-
-@keyframes pencilEraser {
-  from,
-  to {
-    transform: rotate(-45deg) translate(49px, 0);
-  }
-
-  50% {
-    transform: rotate(0deg) translate(49px, 0);
-  }
-}
-
-@keyframes pencilEraserSkew {
-  from,
-  32.5%,
-  67.5%,
-  to {
-    transform: skewX(0);
-  }
-
-  35%,
-  65% {
-    transform: skewX(-4deg);
-  }
-
-  37.5%,
-  62.5% {
-    transform: skewX(8deg);
-  }
-
-  40%,
-  45%,
+@keyframes spinner-fzua35 {
+  0%,
+  10%,
+  20%,
+  30%,
   50%,
-  55%,
-  60% {
-    transform: skewX(-15deg);
-  }
-
-  42.5%,
-  47.5%,
-  52.5%,
-  57.5% {
-    transform: skewX(15deg);
-  }
-}
-
-@keyframes pencilPoint {
-  from,
-  to {
-    transform: rotate(-90deg) translate(49px, -30px);
+  60%,
+  70%,
+  80%,
+  90%,
+  100% {
+    transform: rotate(calc(var(--rotation) * 1deg))
+      translate(0, calc(var(--translation) * 1%));
   }
 
   50% {
-    transform: rotate(-225deg) translate(49px, -30px);
+    transform: rotate(calc(var(--rotation) * 1deg))
+      translate(0, calc(var(--translation) * 1.5%));
   }
 }
-
-@keyframes pencilRotate {
-  from {
-    transform: translate(100px, 100px) rotate(0);
-  }
-
-  to {
-    transform: translate(100px, 100px) rotate(720deg);
-  }
-}
-
-@keyframes pencilStroke {
-  from {
-    stroke-dashoffset: 439.82;
-    transform: translate(100px, 100px) rotate(-113deg);
-  }
-
-  50% {
-    stroke-dashoffset: 164.93;
-    transform: translate(100px, 100px) rotate(-113deg);
-  }
-
-  75%,
-  to {
-    stroke-dashoffset: 439.82;
-    transform: translate(100px, 100px) rotate(112deg);
-  }
-}
-

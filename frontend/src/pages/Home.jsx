@@ -1,7 +1,7 @@
 "use client";
 
+import "../pages/App.css";
 import { Link } from "react-router-dom";
-import "./App.css"; // Import your global styles
 import React from "react";
 import { motion } from "framer-motion";
 import { FiChevronRight } from "react-icons/fi";
@@ -10,7 +10,6 @@ import { useQuery } from "react-query";
 import axios from "axios";
 import ProgressBar from "../components/ProgressBar";
 import LoadingSpinner from "../components/LoadingSpinner";
-import CodeTypingAnimation from "../components/CodeTypingAnimation";
 import {
   BarChart,
   Bar,
@@ -377,18 +376,61 @@ const Home = () => {
                     </motion.a>
                   </motion.div>
 
-                  {/* Code Typing Animation - Replaced the success/failure graph */}
+                  {/* Motivational Chart */}
                   <motion.div
                     className="bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-slate-200/60 dark:border-slate-700/60 max-w-md lg:max-w-2xl shadow-lg"
                     variants={itemVariants}
                   >
                     <div className="flex items-center mb-3 sm:mb-4">
                       <h3 className="text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300">
-                        💻 Coding
+                        🚀 Path to Success
                       </h3>
                     </div>
-                    <CodeTypingAnimation />
-                    <p className="text-xs text-center text-slate-500 dark:text-slate-400 mt-3 font-medium"></p>
+                    <svg
+                      viewBox="0 0 200 100"
+                      className="w-full h-24 sm:h-32 text-blue-600 dark:text-blue-400"
+                    >
+                      <defs>
+                        <linearGradient
+                          id="pathGradient"
+                          x1="0%"
+                          y1="0%"
+                          x2="100%"
+                          y2="0%"
+                        >
+                          <stop offset="0%" stopColor="#3b82f6" />
+                          <stop offset="100%" stopColor="#6366f1" />
+                        </linearGradient>
+                      </defs>
+                      <path
+                        d="M0,90 Q40,20 80,60 T160,30"
+                        fill="none"
+                        stroke="url(#pathGradient)"
+                        strokeWidth="4"
+                        strokeLinecap="round"
+                      />
+                      <text
+                        x="5"
+                        y="95"
+                        fontSize="10"
+                        fill="#64748b"
+                        className="dark:fill-slate-400"
+                      >
+                        Failure
+                      </text>
+                      <text
+                        x="160"
+                        y="25"
+                        fontSize="10"
+                        fill="#64748b"
+                        className="dark:fill-slate-400"
+                      >
+                        Success
+                      </text>
+                    </svg>
+                    <p className="text-xs text-center text-slate-500 dark:text-slate-400 mt-2 font-medium">
+                      Every curve in the path reflects a learning moment.
+                    </p>
                   </motion.div>
                 </motion.div>
 
