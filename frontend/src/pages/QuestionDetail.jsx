@@ -242,7 +242,7 @@ const QuestionDetail = () => {
                 transition={{ delay: 0.2 }}
                 className="bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden"
               >
-                <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-4">
+                <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-3">
                   <h2 className="text-lg font-bold text-white flex items-center gap-2">
                     <FiBookOpen className="w-5 h-5" />
                     Problem Description
@@ -263,7 +263,7 @@ const QuestionDetail = () => {
                   transition={{ delay: 0.3 }}
                   className="bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden"
                 >
-                  <div className="bg-gradient-to-r from-green-500 to-emerald-600 p-4">
+                  <div className="bg-gradient-to-r from-green-500 to-emerald-600 p-3">
                     <h2 className="text-lg font-bold text-white flex items-center gap-2">
                       <FiCode className="w-5 h-5" />
                       Examples
@@ -323,7 +323,7 @@ const QuestionDetail = () => {
                   transition={{ delay: 0.4 }}
                   className="bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden"
                 >
-                  <div className="bg-gradient-to-r from-orange-500 to-red-500 p-4">
+                  <div className="bg-gradient-to-r from-orange-500 to-red-500 p-3">
                     <h2 className="text-lg font-bold text-white flex items-center gap-2">
                       <FiTarget className="w-5 h-5" />
                       Constraints
@@ -352,7 +352,7 @@ const QuestionDetail = () => {
               transition={{ delay: 0.5 }}
               className="bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden lg:sticky lg:top-4 lg:h-fit"
             >
-              <div className="bg-gradient-to-r from-purple-500 to-pink-600 p-4">
+              <div className="bg-gradient-to-r from-purple-500 to-pink-600 p-3">
                 <h2 className="text-lg font-bold text-white flex items-center gap-2">
                   <FiCode className="w-5 h-5" />
                   Solutions
