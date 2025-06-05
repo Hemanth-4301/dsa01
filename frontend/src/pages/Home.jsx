@@ -1,7 +1,8 @@
 "use client";
-import { Link } from "react-router-dom";
-import React from "react";
 
+import { Link } from "react-router-dom";
+import "./App.css"; // Import your global styles
+import React from "react";
 import { motion } from "framer-motion";
 import { FiChevronRight } from "react-icons/fi";
 import { useAuth } from "../contexts/AuthContext";
@@ -9,6 +10,7 @@ import { useQuery } from "react-query";
 import axios from "axios";
 import ProgressBar from "../components/ProgressBar";
 import LoadingSpinner from "../components/LoadingSpinner";
+import CodeTypingAnimation from "../components/CodeTypingAnimation";
 import {
   BarChart,
   Bar,
@@ -23,7 +25,6 @@ import {
   Pie,
   Sector,
 } from "recharts";
-import "./App.css";
 
 const Home = () => {
   const { user } = useAuth();
@@ -106,82 +107,127 @@ const Home = () => {
       })
     : [];
 
-  // Prepare data for category distribution chart
-  const categoryChartData = sortedCategories.map((category) => ({
-    name: category.category.replace("-", " "),
-    count: category.count,
-    solved:
-      progressData?.categoryProgress?.find((cp) => cp._id === category.category)
-        ?.solved || 0,
-  }));
+  // Prepare data for category distribution chart with better naming
+  const categoryChartData = sortedCategories.map((category) => {
+    const categoryName = category.category
+      .split("-")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
 
-  // Prepare data for progress overview pie chart
+    return {
+      name: categoryName,
+      shortName:
+        categoryName.length > 15
+          ? categoryName.substring(0, 12) + "..."
+          : categoryName,
+      fullName: categoryName,
+      count: category.count,
+      solved:
+        progressData?.categoryProgress?.find(
+          (cp) => cp._id === category.category
+        )?.solved || 0,
+    };
+  });
+
+  // Prepare data for progress overview pie chart with enhanced styling
   const progressPieData = [
     {
       name: "Solved",
       value: totalSolved,
       color: "#10b981", // emerald-500
+      gradient: ["#10b981", "#059669"], // emerald-500 to emerald-600
+      icon: "✅",
     },
     {
       name: "Starred",
       value: totalStarred,
       color: "#f59e0b", // amber-500
+      gradient: ["#f59e0b", "#d97706"], // amber-500 to amber-600
+      icon: "⭐",
     },
     {
       name: "Remaining",
       value: totalRemaining,
       color: "#64748b", // slate-500
+      gradient: ["#64748b", "#475569"], // slate-500 to slate-600
+      icon: "📝",
     },
   ].filter((item) => item.value > 0); // Only include non-zero values
 
   // Custom tooltip for category chart
   const CustomCategoryTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
+      const data = payload[0].payload;
       return (
-        <div className="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-lg border border-slate-200 dark:border-slate-700">
-          <p className="font-semibold capitalize">{label}</p>
-          <p className="text-sm">
-            <span className="text-blue-600 dark:text-blue-400">
-              Total: {payload[0].value}
-            </span>
+        <div className="bg-white/95 dark:bg-slate-800/95 backdrop-blur-lg p-4 rounded-xl shadow-xl border border-slate-200/50 dark:border-slate-700/50">
+          <p className="font-semibold text-slate-900 dark:text-slate-100 mb-2">
+            {data.fullName}
           </p>
-          {user && (
-            <p className="text-sm">
-              <span className="text-emerald-600 dark:text-emerald-400">
-                Solved: {payload[1]?.value || 0}
+          <div className="space-y-1">
+            <p className="text-sm flex items-center justify-between">
+              <span className="text-blue-600 dark:text-blue-400 flex items-center">
+                <div className="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
+                Total:
               </span>
+              <span className="font-semibold ml-2">{payload[0].value}</span>
             </p>
-          )}
+            {user && (
+              <p className="text-sm flex items-center justify-between">
+                <span className="text-emerald-600 dark:text-emerald-400 flex items-center">
+                  <div className="w-3 h-3 bg-emerald-500 rounded-full mr-2"></div>
+                  Solved:
+                </span>
+                <span className="font-semibold ml-2">
+                  {payload[1]?.value || 0}
+                </span>
+              </p>
+            )}
+            {user && (
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 pt-2 border-t border-slate-200 dark:border-slate-600">
+                Progress:{" "}
+                {(((payload[1]?.value || 0) / payload[0].value) * 100).toFixed(
+                  1
+                )}
+                %
+              </p>
+            )}
+          </div>
         </div>
       );
     }
     return null;
   };
 
-  // Custom tooltip for pie chart
+  // Enhanced custom tooltip for pie chart
   const CustomPieTooltip = ({ active, payload }) => {
     if (active && payload && payload.length) {
+      const data = payload[0].payload;
       return (
-        <div className="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-lg border border-slate-200 dark:border-slate-700">
-          <p
-            className="font-semibold"
-            style={{ color: payload[0].payload.color }}
-          >
-            {payload[0].name}
-          </p>
-          <p className="text-sm text-slate-600 dark:text-slate-300">
-            {payload[0].value} problems
-          </p>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
-            {((payload[0].value / totalQuestions) * 100).toFixed(1)}% of total
-          </p>
+        <div className="bg-white/95 dark:bg-slate-800/95 backdrop-blur-lg p-4 rounded-xl shadow-xl border border-slate-200/50 dark:border-slate-700/50">
+          <div className="flex items-center space-x-2 mb-2">
+            <span className="text-lg">{data.icon}</span>
+            <p
+              className="font-semibold text-slate-900 dark:text-slate-100"
+              style={{ color: data.color }}
+            >
+              {data.name}
+            </p>
+          </div>
+          <div className="space-y-1">
+            <p className="text-sm text-slate-600 dark:text-slate-300">
+              <span className="font-medium">{data.value}</span> problems
+            </p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              {((data.value / totalQuestions) * 100).toFixed(1)}% of total
+            </p>
+          </div>
         </div>
       );
     }
     return null;
   };
 
-  // Active sector renderer for pie chart
+  // Enhanced active sector renderer for pie chart
   const renderActiveShape = (props) => {
     const {
       cx,
@@ -202,38 +248,40 @@ const Home = () => {
           cx={cx}
           cy={cy}
           innerRadius={innerRadius}
-          outerRadius={outerRadius + 6}
+          outerRadius={outerRadius + 8}
           startAngle={startAngle}
           endAngle={endAngle}
           fill={fill}
-          className="drop-shadow-md"
+          className="drop-shadow-lg"
+          style={{
+            filter: "drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1))",
+          }}
         />
         <Sector
           cx={cx}
           cy={cy}
           startAngle={startAngle}
           endAngle={endAngle}
-          innerRadius={outerRadius + 8}
-          outerRadius={outerRadius + 10}
+          innerRadius={outerRadius + 10}
+          outerRadius={outerRadius + 12}
           fill={fill}
+          opacity={0.6}
         />
         <text
           x={cx}
-          y={cy - 8}
+          y={cy - 12}
           dy={8}
           textAnchor="middle"
-          fill={fill}
-          className="text-sm font-semibold"
+          className="text-sm font-bold fill-slate-800 dark:fill-slate-200"
         >
-          {payload.name}
+          {payload.icon} {payload.name}
         </text>
         <text
           x={cx}
           y={cy + 8}
           dy={8}
           textAnchor="middle"
-          fill="#64748b"
-          className="text-xs"
+          className="text-xs fill-slate-600 dark:fill-slate-400"
         >
           {`${value} (${(percent * 100).toFixed(1)}%)`}
         </text>
@@ -244,7 +292,7 @@ const Home = () => {
   // State for active pie sector
   const [activePieIndex, setActivePieIndex] = React.useState(0);
 
-  // Enhanced category chart colors
+  // Enhanced category chart colors with gradients
   const categoryColors = [
     "#3b82f6", // blue-500
     "#4f46e5", // indigo-600
@@ -262,6 +310,7 @@ const Home = () => {
     "#0d9488", // teal-600
     "#0891b2", // cyan-600
     "#0284c7", // sky-600
+    "#1d4ed8", // blue-700
   ];
 
   return (
@@ -269,12 +318,12 @@ const Home = () => {
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className="space-y-12"
+      className="space-y-8 sm:space-y-12"
     >
       {/* Hero Section */}
       <section id="hero">
         <motion.div
-          className="relative overflow-hidden bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-blue-900/20 dark:to-indigo-900/30 rounded-3xl border border-slate-200/60 dark:border-slate-700/60 mb-10 shadow-xl dark:shadow-2xl"
+          className="relative overflow-hidden bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-blue-900/20 dark:to-indigo-900/30 rounded-2xl sm:rounded-3xl border border-slate-200/60 dark:border-slate-700/60 mb-8 sm:mb-10 shadow-xl dark:shadow-2xl"
           variants={containerVariants}
           initial="hidden"
           animate="visible"
@@ -285,27 +334,27 @@ const Home = () => {
             <div className="absolute inset-0 bg-gradient-to-br from-white/60 via-transparent to-blue-500/5 dark:from-slate-900/80 dark:via-transparent dark:to-blue-500/10"></div>
           </div>
 
-          <div className="relative z-10 px-4 sm:px-6 lg:px-8 py-12 md:py-20">
+          <div className="relative z-10 px-4 sm:px-6 lg:px-8 py-8 sm:py-12 md:py-20">
             <div className="max-w-7xl mx-auto">
-              <div className="flex flex-col lg:flex-row items-center justify-between gap-8 lg:gap-12">
+              <div className="flex flex-col lg:flex-row items-center justify-between gap-6 sm:gap-8 lg:gap-12">
                 {/* Left section */}
                 <motion.div className="flex-1 w-full" variants={itemVariants}>
                   <motion.div
-                    className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-gradient-to-r from-emerald-100 to-teal-100 dark:from-emerald-900/40 dark:to-teal-900/40 text-emerald-800 dark:text-emerald-200 mb-6 shadow-sm border border-emerald-200/50 dark:border-emerald-700/50"
+                    className="inline-flex items-center px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-semibold bg-gradient-to-r from-emerald-100 to-teal-100 dark:from-emerald-900/40 dark:to-teal-900/40 text-emerald-800 dark:text-emerald-200 mb-4 sm:mb-6 shadow-sm border border-emerald-200/50 dark:border-emerald-700/50"
                     variants={itemVariants}
                   >
                     ✨ Learn DSA with {totalQuestions - 3}+ Problems
                   </motion.div>
 
                   <motion.h1
-                    className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight mb-6 bg-gradient-to-r from-slate-900 via-blue-800 to-indigo-800 dark:from-slate-100 dark:via-blue-200 dark:to-indigo-200 bg-clip-text text-transparent"
+                    className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-4 sm:mb-6 bg-gradient-to-r from-slate-900 via-blue-800 to-indigo-800 dark:from-slate-100 dark:via-blue-200 dark:to-indigo-200 bg-clip-text text-transparent"
                     variants={itemVariants}
                   >
                     Level Up Your Coding Skills
                   </motion.h1>
 
                   <motion.p
-                    className="text-base sm:text-lg md:text-xl text-slate-600 dark:text-slate-300 mb-8 max-w-xl leading-relaxed"
+                    className="text-sm sm:text-base md:text-lg lg:text-xl text-slate-600 dark:text-slate-300 mb-6 sm:mb-8 max-w-xl leading-relaxed"
                     variants={itemVariants}
                   >
                     Practice the most important algorithms and ace your
@@ -314,85 +363,42 @@ const Home = () => {
                   </motion.p>
 
                   <motion.div
-                    className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-8"
+                    className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-6 sm:mb-8"
                     variants={itemVariants}
                   >
                     <motion.a
                       href="#categories"
-                      className="inline-flex items-center justify-center px-6 py-3 text-base font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-xl shadow-lg hover:shadow-xl transform transition-all duration-200 hover:scale-105 border border-blue-500/20"
+                      className="inline-flex items-center justify-center px-4 sm:px-6 py-3 text-sm sm:text-base font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-xl shadow-lg hover:shadow-xl transform transition-all duration-200 hover:scale-105 border border-blue-500/20"
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.98 }}
                     >
                       Start Learning
-                      <FiChevronRight className="ml-2 h-5 w-5" />
+                      <FiChevronRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
                     </motion.a>
                   </motion.div>
 
-                  {/* Motivational Chart */}
+                  {/* Code Typing Animation - Replaced the success/failure graph */}
                   <motion.div
-                    className="bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm rounded-2xl p-6 border border-slate-200/60 dark:border-slate-700/60 max-w-md lg:max-w-2xl shadow-lg"
+                    className="bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-slate-200/60 dark:border-slate-700/60 max-w-md lg:max-w-2xl shadow-lg"
                     variants={itemVariants}
                   >
-                    <div className="flex items-center mb-4">
-                      <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-                        🚀 Path to Success
+                    <div className="flex items-center mb-3 sm:mb-4">
+                      <h3 className="text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300">
+                        💻 Coding
                       </h3>
                     </div>
-                    <svg
-                      viewBox="0 0 200 100"
-                      className="w-full h-32 text-blue-600 dark:text-blue-400"
-                    >
-                      <defs>
-                        <linearGradient
-                          id="pathGradient"
-                          x1="0%"
-                          y1="0%"
-                          x2="100%"
-                          y2="0%"
-                        >
-                          <stop offset="0%" stopColor="#3b82f6" />
-                          <stop offset="100%" stopColor="#6366f1" />
-                        </linearGradient>
-                      </defs>
-                      <path
-                        d="M0,90 Q40,20 80,60 T160,30"
-                        fill="none"
-                        stroke="url(#pathGradient)"
-                        strokeWidth="4"
-                        strokeLinecap="round"
-                      />
-                      <text
-                        x="5"
-                        y="95"
-                        fontSize="10"
-                        fill="#64748b"
-                        className="dark:fill-slate-400"
-                      >
-                        Failure
-                      </text>
-                      <text
-                        x="160"
-                        y="25"
-                        fontSize="10"
-                        fill="#64748b"
-                        className="dark:fill-slate-400"
-                      >
-                        Success
-                      </text>
-                    </svg>
-                    <p className="text-xs text-center text-slate-500 dark:text-slate-400 mt-2 font-medium">
-                      Every curve in the path reflects a learning moment.
-                    </p>
+                    <CodeTypingAnimation />
+                    <p className="text-xs text-center text-slate-500 dark:text-slate-400 mt-3 font-medium"></p>
                   </motion.div>
                 </motion.div>
 
                 {/* Right section - Progress */}
                 <motion.div
-                  className="flex-shrink-0 relative w-full max-w-xs mx-auto lg:mx-0 mt-10 md:mt-12"
+                  className="flex-shrink-0 relative w-full max-w-xs mx-auto lg:mx-0 mt-6 sm:mt-10 md:mt-12"
                   variants={itemVariants}
                 >
-                  <div className="relative w-48 h-48 sm:w-56 sm:h-56 md:w-64 md:h-64 mx-auto">
-                    <div className="absolute inset-0 rounded-full bg-gradient-to-br from-blue-100 via-indigo-100 to-purple-100 dark:from-blue-900/30 dark:via-indigo-900/30 dark:to-purple-900/30 flex items-center justify-center p-8 shadow-2xl border border-blue-200/50 dark:border-blue-700/50">
+                  <div className="relative w-40 h-40 sm:w-48 sm:h-48 md:w-56 md:h-56 lg:w-64 lg:h-64 mx-auto">
+                    <div className="absolute inset-0 rounded-full bg-gradient-to-br from-blue-100 via-indigo-100 to-purple-100 dark:from-blue-900/30 dark:via-indigo-900/30 dark:to-purple-900/30 flex items-center justify-center p-6 sm:p-8 shadow-2xl border border-blue-200/50 dark:border-blue-700/50">
                       <div className="bar">
                         <div className="ball bg-gradient-to-r from-blue-500 to-indigo-500"></div>
                       </div>
@@ -444,12 +450,12 @@ const Home = () => {
                         />
                       </circle>
                     </svg>
-                    <div className="absolute inset-0 flex items-center justify-center mt-24">
+                    <div className="absolute inset-0 flex items-center justify-center mt-16 sm:mt-20 md:mt-24">
                       <div className="text-center">
-                        <span className="block text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
+                        <span className="block text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
                           {totalSolved}
                         </span>
-                        <span className="block text-sm text-slate-600 dark:text-slate-400 font-medium">
+                        <span className="block text-xs sm:text-sm text-slate-600 dark:text-slate-400 font-medium">
                           of {totalQuestions}
                         </span>
                       </div>
@@ -465,83 +471,86 @@ const Home = () => {
       {/* User Stats Section */}
       {user && (
         <motion.section variants={itemVariants}>
-          <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 shadow-lg border border-slate-200/60 dark:border-slate-700/60">
-            <h2 className="text-2xl  text-center font-bold bg-gradient-to-r from-slate-900 to-slate-700 dark:from-slate-100 dark:to-slate-300 bg-clip-text text-transparent mb-6">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 shadow-lg border border-slate-200/60 dark:border-slate-700/60">
+            <h2 className="text-xl sm:text-2xl text-center font-bold bg-gradient-to-r from-slate-900 to-slate-700 dark:from-slate-100 dark:to-slate-300 bg-clip-text text-transparent mb-4 sm:mb-6">
               Your Dashboard
             </h2>
             {progressLoading ? (
               <LoadingSpinner />
             ) : (
-              <div className="space-y-8">
-                {/* Progress Overview Pie Chart */}
-                <div className="bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm rounded-2xl p-6 border border-slate-200/60 dark:border-slate-700/60 shadow-lg">
-                  <h3 className="text-lg font-semibold bg-gradient-to-r from-slate-900 to-slate-700 dark:from-slate-100 dark:to-slate-300 bg-clip-text text-transparent mb-4 text-center">
+              <div className="space-y-6 sm:space-y-8">
+                {/* Enhanced Progress Overview Pie Chart */}
+                <div className="bg-gradient-to-br from-white/80 to-slate-50/80 dark:from-slate-800/80 dark:to-slate-900/80 backdrop-blur-sm rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-slate-200/60 dark:border-slate-700/60 shadow-lg">
+                  <h3 className="text-base sm:text-lg font-semibold bg-gradient-to-r from-slate-900 to-slate-700 dark:from-slate-100 dark:to-slate-300 bg-clip-text text-transparent mb-4 sm:mb-6 text-center">
                     🎯 Progress Overview
                   </h3>
-                  <div className="flex flex-col lg:flex-row items-center justify-center">
-                    <div className="h-64 sm:h-72 w-full max-w-md">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                          <defs>
-                            {progressPieData.map((entry, index) => (
-                              <linearGradient
-                                key={`gradient-${index}`}
-                                id={`pieGradient-${index}`}
-                                x1="0"
-                                y1="0"
-                                x2="0"
-                                y2="1"
-                              >
-                                <stop
-                                  offset="0%"
-                                  stopColor={entry.color}
-                                  stopOpacity={1}
+                  <div className="flex flex-col xl:flex-row items-center justify-center gap-6 sm:gap-8">
+                    {/* Enhanced Pie Chart */}
+                    <div className="w-full max-w-sm sm:max-w-md">
+                      <div className="h-64 sm:h-80 lg:h-96">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <PieChart>
+                            <defs>
+                              {progressPieData.map((entry, index) => (
+                                <linearGradient
+                                  key={`gradient-${index}`}
+                                  id={`pieGradient-${index}`}
+                                  x1="0"
+                                  y1="0"
+                                  x2="0"
+                                  y2="1"
+                                >
+                                  <stop
+                                    offset="0%"
+                                    stopColor={entry.gradient[0]}
+                                    stopOpacity={1}
+                                  />
+                                  <stop
+                                    offset="100%"
+                                    stopColor={entry.gradient[1]}
+                                    stopOpacity={0.8}
+                                  />
+                                </linearGradient>
+                              ))}
+                            </defs>
+                            <Pie
+                              activeIndex={activePieIndex}
+                              activeShape={renderActiveShape}
+                              data={progressPieData}
+                              cx="50%"
+                              cy="50%"
+                              innerRadius="45%"
+                              outerRadius="75%"
+                              paddingAngle={3}
+                              dataKey="value"
+                              onMouseEnter={(_, index) =>
+                                setActivePieIndex(index)
+                              }
+                              animationBegin={200}
+                              animationDuration={1500}
+                              animationEasing="ease-out"
+                            >
+                              {progressPieData.map((entry, index) => (
+                                <Cell
+                                  key={`cell-${index}`}
+                                  fill={`url(#pieGradient-${index})`}
+                                  stroke={entry.color}
+                                  strokeWidth={2}
+                                  className="drop-shadow-lg hover:drop-shadow-xl transition-all duration-300 cursor-pointer"
                                 />
-                                <stop
-                                  offset="100%"
-                                  stopColor={entry.color}
-                                  stopOpacity={0.8}
-                                />
-                              </linearGradient>
-                            ))}
-                          </defs>
-                          <Pie
-                            activeIndex={activePieIndex}
-                            activeShape={renderActiveShape}
-                            data={progressPieData}
-                            cx="50%"
-                            cy="50%"
-                            innerRadius={60}
-                            outerRadius={80}
-                            paddingAngle={4}
-                            dataKey="value"
-                            onMouseEnter={(_, index) =>
-                              setActivePieIndex(index)
-                            }
-                            animationBegin={200}
-                            animationDuration={1200}
-                            animationEasing="ease-out"
-                          >
-                            {progressPieData.map((entry, index) => (
-                              <Cell
-                                key={`cell-${index}`}
-                                fill={`url(#pieGradient-${index})`}
-                                stroke={entry.color}
-                                strokeWidth={1}
-                                className="drop-shadow-sm hover:drop-shadow-md transition-all duration-300"
-                              />
-                            ))}
-                            {progressPieData.length === 0 && (
-                              <Cell fill="#e2e8f0" />
-                            )}
-                          </Pie>
-                          <Tooltip content={<CustomPieTooltip />} />
-                        </PieChart>
-                      </ResponsiveContainer>
+                              ))}
+                              {progressPieData.length === 0 && (
+                                <Cell fill="#e2e8f0" />
+                              )}
+                            </Pie>
+                            <Tooltip content={<CustomPieTooltip />} />
+                          </PieChart>
+                        </ResponsiveContainer>
+                      </div>
                     </div>
 
-                    {/* Legend */}
-                    <div className="space-y-3 w-full max-w-md">
+                    {/* Enhanced Legend */}
+                    <div className="w-full max-w-sm space-y-3 sm:space-y-4">
                       {progressPieData.map((entry, index) => (
                         <motion.div
                           key={index}
@@ -551,22 +560,30 @@ const Home = () => {
                             delay: index * 0.1 + 0.3,
                             duration: 0.5,
                           }}
-                          className={`flex items-center space-x-3 p-3 rounded-xl ${
+                          className={`flex items-center space-x-3 sm:space-x-4 p-3 sm:p-4 rounded-xl sm:rounded-2xl transition-all duration-300 cursor-pointer ${
                             index === activePieIndex
-                              ? "bg-slate-100 dark:bg-slate-700"
-                              : "bg-slate-50 dark:bg-slate-800/50"
-                          } hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors duration-200 cursor-pointer`}
+                              ? "bg-slate-100 dark:bg-slate-700 shadow-md scale-105"
+                              : "bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-700"
+                          }`}
                           onMouseEnter={() => setActivePieIndex(index)}
+                          whileHover={{ scale: 1.02 }}
                         >
-                          <div
-                            className="w-4 h-4 rounded-full shadow-sm"
-                            style={{ backgroundColor: entry.color }}
-                          ></div>
+                          <div className="flex items-center space-x-2 sm:space-x-3">
+                            <span className="text-lg sm:text-xl">
+                              {entry.icon}
+                            </span>
+                            <div
+                              className="w-3 h-3 sm:w-4 sm:h-4 rounded-full shadow-sm"
+                              style={{
+                                background: `linear-gradient(135deg, ${entry.gradient[0]}, ${entry.gradient[1]})`,
+                              }}
+                            ></div>
+                          </div>
                           <div className="flex-1">
-                            <div className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                            <div className="text-sm sm:text-base font-semibold text-slate-700 dark:text-slate-300">
                               {entry.name}
                             </div>
-                            <div className="text-xs text-slate-500 dark:text-slate-400">
+                            <div className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
                               {entry.value} problems (
                               {((entry.value / totalQuestions) * 100).toFixed(
                                 1
@@ -574,7 +591,10 @@ const Home = () => {
                               %)
                             </div>
                           </div>
-                          <div className="text-lg font-bold text-slate-600 dark:text-slate-400">
+                          <div
+                            className="text-lg sm:text-xl font-bold"
+                            style={{ color: entry.color }}
+                          >
                             {entry.value}
                           </div>
                         </motion.div>
@@ -584,23 +604,23 @@ const Home = () => {
                 </div>
 
                 {/* Enhanced Category Distribution Bar Chart */}
-                <div className="bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm rounded-2xl p-6 border border-slate-200/60 dark:border-slate-700/60 shadow-lg">
-                  <h3 className="text-lg font-semibold bg-gradient-to-r from-slate-900 to-slate-700 dark:from-slate-100 dark:to-slate-300 bg-clip-text text-transparent mb-4 text-center">
+                <div className="bg-gradient-to-br from-white/80 to-slate-50/80 dark:from-slate-800/80 dark:to-slate-900/80 backdrop-blur-sm rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-slate-200/60 dark:border-slate-700/60 shadow-lg">
+                  <h3 className="text-base sm:text-lg font-semibold bg-gradient-to-r from-slate-900 to-slate-700 dark:from-slate-100 dark:to-slate-300 bg-clip-text text-transparent mb-4 sm:mb-6 text-center">
                     📊 Questions by Category
                   </h3>
-                  <div className="h-96 sm:h-[28rem]">
+                  <div className="h-[500px] sm:h-[600px] lg:h-[700px]">
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart
                         data={categoryChartData}
+                        layout="vertical"
                         margin={{
                           top: 20,
-                          right: 30,
-                          left: 20,
-                          bottom: 60,
+                          right: 20,
+                          left: 10,
+                          bottom: 20,
                         }}
-                        layout="vertical"
-                        barGap={2}
-                        barSize={16}
+                        barGap={4}
+                        barSize={20}
                       >
                         <defs>
                           {categoryChartData.map((_, index) => (
@@ -642,7 +662,7 @@ const Home = () => {
                             />
                             <stop
                               offset="100%"
-                              stopColor="#10b981"
+                              stopColor="#059669"
                               stopOpacity={1}
                             />
                           </linearGradient>
@@ -650,7 +670,7 @@ const Home = () => {
                         <CartesianGrid
                           strokeDasharray="3 3"
                           stroke="#e2e8f0"
-                          strokeOpacity={0.2}
+                          strokeOpacity={0.3}
                           horizontal={true}
                           vertical={false}
                         />
@@ -659,30 +679,34 @@ const Home = () => {
                           tickLine={false}
                           axisLine={{ stroke: "#e2e8f0", strokeOpacity: 0.3 }}
                           tick={{ fill: "#64748b", fontSize: 12 }}
+                          domain={[0, "dataMax + 2"]}
                         />
                         <YAxis
                           dataKey="name"
                           type="category"
-                          width={100}
+                          width={120}
                           tick={{
                             fill: "#64748b",
-                            fontSize: 12,
+                            fontSize: 11,
                             textAnchor: "end",
-                            width: 100,
                           }}
-                          tickFormatter={(value) =>
-                            value.length > 12
-                              ? value.substring(0, 12) + "..."
-                              : value
-                          }
+                          tickFormatter={(value) => {
+                            // Find the full name for this category
+                            const category = categoryChartData.find(
+                              (cat) => cat.name === value
+                            );
+                            return category ? category.fullName : value;
+                          }}
                           axisLine={{ stroke: "#e2e8f0", strokeOpacity: 0.3 }}
+                          tickLine={false}
+                          interval={0}
                         />
                         <Tooltip content={<CustomCategoryTooltip />} />
                         <Legend
                           verticalAlign="top"
-                          height={36}
+                          height={40}
                           iconType="circle"
-                          iconSize={8}
+                          iconSize={10}
                           formatter={(value) => (
                             <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
                               {value}
@@ -692,7 +716,7 @@ const Home = () => {
                         <Bar
                           dataKey="count"
                           name="Total"
-                          radius={[0, 4, 4, 0]}
+                          radius={[0, 6, 6, 0]}
                           className="drop-shadow-sm"
                         >
                           {categoryChartData.map((_, index) => (
@@ -708,7 +732,7 @@ const Home = () => {
                             dataKey="solved"
                             name="Solved"
                             fill="url(#solvedGradient)"
-                            radius={[0, 4, 4, 0]}
+                            radius={[0, 6, 6, 0]}
                             className="drop-shadow-sm"
                           />
                         )}
@@ -724,7 +748,7 @@ const Home = () => {
 
       {/* Categories Section */}
       <motion.section variants={itemVariants} id="categories">
-        <h2 className="text-3xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 dark:from-slate-100 dark:to-slate-300 bg-clip-text text-transparent mb-8 text-center">
+        <h2 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 dark:from-slate-100 dark:to-slate-300 bg-clip-text text-transparent mb-6 sm:mb-8 text-center">
           Practice by Category
         </h2>
         {categoriesLoading ? (
@@ -732,7 +756,7 @@ const Home = () => {
             <LoadingSpinner size="lg" />
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {sortedCategories.map((category) => {
               const userCategoryProgress = progressData?.categoryProgress?.find(
                 (cp) => cp._id === category.category
@@ -747,13 +771,13 @@ const Home = () => {
                 >
                   <Link
                     to={`/questions?category=${category.category}`}
-                    className="block p-6 bg-white dark:bg-slate-800 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-slate-200/60 dark:border-slate-700/60 hover:border-blue-300 dark:hover:border-blue-600 group"
+                    className="block p-4 sm:p-6 bg-white dark:bg-slate-800 rounded-xl sm:rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-slate-200/60 dark:border-slate-700/60 hover:border-blue-300 dark:hover:border-blue-600 group"
                   >
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-lg font-semibold bg-gradient-to-r from-slate-900 to-slate-700 dark:from-slate-100 dark:to-slate-300 bg-clip-text text-transparent capitalize group-hover:from-blue-600 group-hover:to-indigo-600 dark:group-hover:from-blue-400 dark:group-hover:to-indigo-400 transition-all duration-300">
+                    <div className="flex items-center justify-between mb-3 sm:mb-4">
+                      <h3 className="text-base sm:text-lg font-semibold bg-gradient-to-r from-slate-900 to-slate-700 dark:from-slate-100 dark:to-slate-300 bg-clip-text text-transparent capitalize group-hover:from-blue-600 group-hover:to-indigo-600 dark:group-hover:from-blue-400 dark:group-hover:to-indigo-400 transition-all duration-300">
                         {category.category.replace("-", " ")}
                       </h3>
-                      <span className="text-sm text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-700 px-3 py-1 rounded-full font-medium">
+                      <span className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-700 px-2 sm:px-3 py-1 rounded-full font-medium">
                         {category.count} problems
                       </span>
                     </div>
@@ -762,21 +786,21 @@ const Home = () => {
                       <ProgressBar
                         solved={solved}
                         total={category.count}
-                        className="mb-4"
+                        className="mb-3 sm:mb-4"
                       />
                     )}
 
-                    <div className="flex justify-between text-sm">
+                    <div className="flex justify-between text-xs sm:text-sm">
                       <span className="flex items-center text-emerald-600 dark:text-emerald-400 font-medium">
-                        <div className="w-2 h-2 bg-emerald-500 rounded-full mr-2"></div>
+                        <div className="w-2 h-2 bg-emerald-500 rounded-full mr-1 sm:mr-2"></div>
                         Easy: {category.easy}
                       </span>
                       <span className="flex items-center text-amber-600 dark:text-amber-400 font-medium">
-                        <div className="w-2 h-2 bg-amber-500 rounded-full mr-2"></div>
+                        <div className="w-2 h-2 bg-amber-500 rounded-full mr-1 sm:mr-2"></div>
                         Medium: {category.medium}
                       </span>
                       <span className="flex items-center text-rose-600 dark:text-rose-400 font-medium">
-                        <div className="w-2 h-2 bg-rose-500 rounded-full mr-2"></div>
+                        <div className="w-2 h-2 bg-rose-500 rounded-full mr-1 sm:mr-2"></div>
                         Hard: {category.hard}
                       </span>
                     </div>
@@ -790,18 +814,20 @@ const Home = () => {
 
       {/* CTA Section */}
       {!user && (
-        <motion.section variants={itemVariants} className="text-center py-12">
-          <div className="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-blue-900/20 dark:via-indigo-900/20 dark:to-purple-900/20 border border-blue-200/60 dark:border-blue-700/60 rounded-2xl p-8 shadow-lg">
-            <h2 className="text-2xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 dark:from-slate-100 dark:to-slate-300 bg-clip-text text-transparent mb-4">
+        <motion.section
+          variants={itemVariants}
+          className="text-center py-8 sm:py-12"
+        >
+          <div className="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-blue-900/20 dark:via-indigo-900/20 dark:to-purple-900/20 border border-blue-200/60 dark:border-blue-700/60 rounded-xl sm:rounded-2xl p-6 sm:p-8 shadow-lg">
+            <h2 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 dark:from-slate-100 dark:to-slate-300 bg-clip-text text-transparent mb-3 sm:mb-4">
               Ready to Start Your Journey?
             </h2>
-            <p className="text-slate-600 dark:text-slate-300 mb-6">
-              Join thousands of developers improving their coding skills every
-              day.
+            <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 mb-4 sm:mb-6">
+              Join Today to improve your coding skills.
             </p>
             <Link
               to="/register"
-              className="inline-flex items-center justify-center px-8 py-3 text-lg font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-xl shadow-lg hover:shadow-xl transform transition-all duration-200 hover:scale-105"
+              className="inline-flex items-center justify-center px-6 sm:px-8 py-3 text-base sm:text-lg font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-xl shadow-lg hover:shadow-xl transform transition-all duration-200 hover:scale-105"
             >
               Get Started for Free
             </Link>

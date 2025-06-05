@@ -12,11 +12,9 @@ import {
 import { useQuery } from "react-query";
 import axios from "axios";
 import { useAuth } from "../contexts/AuthContext";
-import ProgressBar from "../components/ProgressBar";
 import LoadingSpinner from "../components/LoadingSpinner";
 import CalendarHeatmap from "react-calendar-heatmap";
 import "react-calendar-heatmap/dist/styles.css";
-import { Link } from "react-router-dom";
 import {
   BarChart,
   Bar,
@@ -104,10 +102,11 @@ const Profile = () => {
     "trees",
     "trie",
     "graphs",
-    "dynamic-programming 1d",
-    "dynamic-programming 2d",
+    "dynamic-programming-1d",
+    "dynamic-programming-2d",
     "greedy",
     "bit-manipulation",
+    "miscellaneous",
   ];
 
   // Sort categories according to the specified order
@@ -119,16 +118,29 @@ const Profile = () => {
       })
     : [];
 
-  // Prepare data for category distribution chart
-  const categoryChartData = sortedCategories.map((category) => ({
-    name: category.category.replace("-", " "),
-    count: category.count,
-    solved:
-      progressData?.categoryProgress?.find((cp) => cp._id === category.category)
-        ?.solved || 0,
-  }));
+  // Prepare data for category distribution chart with better naming
+  const categoryChartData = sortedCategories.map((category) => {
+    const categoryName = category.category
+      .split("-")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
 
-  // Category chart colors
+    return {
+      name: categoryName,
+      shortName:
+        categoryName.length > 15
+          ? categoryName.substring(0, 12) + "..."
+          : categoryName,
+      fullName: categoryName,
+      count: category.count,
+      solved:
+        progressData?.categoryProgress?.find(
+          (cp) => cp._id === category.category
+        )?.solved || 0,
+    };
+  });
+
+  // Enhanced category chart colors with gradients
   const categoryColors = [
     "#3b82f6", // blue-500
     "#4f46e5", // indigo-600
@@ -146,24 +158,41 @@ const Profile = () => {
     "#0d9488", // teal-600
     "#0891b2", // cyan-600
     "#0284c7", // sky-600
+    "#1d4ed8", // blue-700
   ];
 
-  // Custom tooltip for category chart
+  // Enhanced custom tooltip for category chart
   const CustomCategoryTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
+      const data = payload[0].payload;
       return (
-        <div className="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-lg border border-slate-200/60 dark:border-slate-700/60">
-          <p className="font-semibold capitalize">{label}</p>
-          <p className="text-sm">
-            <span className="text-blue-600 dark:text-blue-400">
-              Total: {payload[0].value}
-            </span>
+        <div className="bg-white/95 dark:bg-slate-800/95 backdrop-blur-lg p-4 rounded-xl shadow-xl border border-slate-200/50 dark:border-slate-700/50">
+          <p className="font-semibold text-slate-900 dark:text-slate-100 mb-2">
+            {data.fullName}
           </p>
-          <p className="text-sm">
-            <span className="text-emerald-600 dark:text-emerald-400">
-              Solved: {payload[1]?.value || 0}
-            </span>
-          </p>
+          <div className="space-y-1">
+            <p className="text-sm flex items-center justify-between">
+              <span className="text-blue-600 dark:text-blue-400 flex items-center">
+                <div className="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
+                Total:
+              </span>
+              <span className="font-semibold ml-2">{payload[0].value}</span>
+            </p>
+            <p className="text-sm flex items-center justify-between">
+              <span className="text-emerald-600 dark:text-emerald-400 flex items-center">
+                <div className="w-3 h-3 bg-emerald-500 rounded-full mr-2"></div>
+                Solved:
+              </span>
+              <span className="font-semibold ml-2">
+                {payload[1]?.value || 0}
+              </span>
+            </p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 pt-2 border-t border-slate-200 dark:border-slate-600">
+              Progress:{" "}
+              {(((payload[1]?.value || 0) / payload[0].value) * 100).toFixed(1)}
+              %
+            </p>
+          </div>
         </div>
       );
     }
@@ -183,29 +212,36 @@ const Profile = () => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="space-y-6 px-4 sm:px-6 lg:px-8 py-4"
+      className="space-y-4 sm:space-y-6 px-4 sm:px-6 lg:px-8 py-4"
     >
-      {/* Profile Header */}
-      <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-lg border border-slate-200/60 dark:border-slate-700/60">
+      {/* Enhanced Profile Header */}
+      <div className="bg-gradient-to-br from-white/80 to-slate-50/80 dark:from-slate-800/80 dark:to-slate-900/80 backdrop-blur-sm rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-lg border border-slate-200/60 dark:border-slate-700/60">
         <div className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-6">
-          <img
-            src={user?.avatar || "/placeholder.svg?height=80&width=80"}
-            alt={user?.name}
-            className="w-16 h-16 sm:w-20 sm:h-20 rounded-full"
-          />
+          <div className="relative">
+            <img
+              src={user?.avatar || "/placeholder.svg?height=80&width=80"}
+              alt={user?.name}
+              className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border-4 border-blue-500/20 shadow-lg"
+            />
+            <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full flex items-center justify-center">
+              <span className="text-white text-xs font-bold">
+                {stats.totalSolved}
+              </span>
+            </div>
+          </div>
           <div className="flex-1 text-center sm:text-left">
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-slate-900 via-blue-800 to-indigo-800 dark:from-white dark:via-blue-200 dark:to-indigo-200 bg-clip-text text-transparent">
               {user?.name}
             </h1>
-            <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 mt-2 text-gray-600 dark:text-gray-400 text-sm sm:text-base">
-              <div className="flex items-center justify-center sm:justify-start space-x-1">
-                <FiMail className="w-4 h-4" />
+            <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 mt-2 text-slate-600 dark:text-slate-400 text-sm sm:text-base">
+              <div className="flex items-center justify-center sm:justify-start space-x-2">
+                <FiMail className="w-4 h-4 text-blue-500" />
                 <span className="truncate max-w-[180px] sm:max-w-none">
                   {user?.email}
                 </span>
               </div>
-              <div className="flex items-center justify-center sm:justify-start space-x-1">
-                <FiCalendar className="w-4 h-4" />
+              <div className="flex items-center justify-center sm:justify-start space-x-2">
+                <FiCalendar className="w-4 h-4 text-purple-500" />
                 <span>
                   Joined {new Date(user?.createdAt).toLocaleDateString()}
                 </span>
@@ -215,45 +251,51 @@ const Profile = () => {
         </div>
       </div>
 
-      {/* Stats Overview */}
-      <div className="grid grid-cols-2 gap-4">
-        <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 text-center shadow-lg border border-slate-200/60 dark:border-slate-700/60">
-          <div className="text-xl sm:text-3xl font-bold text-emerald-600 dark:text-emerald-400 mb-2">
+      {/* Enhanced Stats Overview */}
+      <div className="grid grid-cols-2 gap-3 sm:gap-4">
+        <motion.div
+          whileHover={{ scale: 1.02 }}
+          className="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 rounded-xl sm:rounded-2xl p-4 sm:p-6 text-center shadow-lg border border-emerald-200/50 dark:border-emerald-700/50"
+        >
+          <div className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent mb-2">
             {stats.totalSolved}
           </div>
-          <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-            Solved
+          <div className="text-xs sm:text-sm text-emerald-700 dark:text-emerald-300 font-medium">
+            Problems Solved
           </div>
-        </div>
-        <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 text-center shadow-lg border border-slate-200/60 dark:border-slate-700/60">
-          <div className="text-xl sm:text-3xl font-bold text-amber-500 dark:text-amber-400 mb-2">
+        </motion.div>
+        <motion.div
+          whileHover={{ scale: 1.02 }}
+          className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-xl sm:rounded-2xl p-4 sm:p-6 text-center shadow-lg border border-amber-200/50 dark:border-amber-700/50"
+        >
+          <div className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent mb-2">
             {stats.totalStarred}
           </div>
-          <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-            Starred
+          <div className="text-xs sm:text-sm text-amber-700 dark:text-amber-300 font-medium">
+            Questions Starred
           </div>
-        </div>
+        </motion.div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex space-x-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-lg">
+      {/* Enhanced Tabs */}
+      <div className="flex space-x-1 bg-slate-100/80 dark:bg-slate-800/80 backdrop-blur-sm p-1 rounded-xl border border-slate-200/50 dark:border-slate-700/50">
         {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`flex items-center justify-center space-x-2 flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 ${
+            className={`flex items-center justify-center space-x-2 flex-1 px-3 sm:px-4 py-2 sm:py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
               activeTab === tab.id
-                ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm"
-                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-lg scale-105"
+                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-slate-700/50"
             }`}
           >
             <tab.icon className="w-4 h-4" />
-            <span>{tab.label}</span>
+            <span className="hidden sm:inline">{tab.label}</span>
           </button>
         ))}
       </div>
 
-      {/* Tab Content */}
+      {/* Enhanced Tab Content */}
       <motion.div
         key={activeTab}
         initial={{ opacity: 0, y: 10 }}
@@ -261,14 +303,14 @@ const Profile = () => {
         transition={{ duration: 0.3 }}
       >
         {activeTab === "overview" && (
-          <div className="space-y-6">
-            {/* Activity Heatmap */}
-            <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-lg border border-slate-200/60 dark:border-slate-700/60">
-              <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-6">
-                Activity Heatmap
+          <div className="space-y-4 sm:space-y-6">
+            {/* Enhanced Activity Heatmap */}
+            <div className="bg-gradient-to-br from-white/80 to-slate-50/80 dark:from-slate-800/80 dark:to-slate-900/80 backdrop-blur-sm rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-lg border border-slate-200/60 dark:border-slate-700/60">
+              <h2 className="text-lg sm:text-xl font-semibold bg-gradient-to-r from-slate-900 to-slate-700 dark:from-slate-100 dark:to-slate-300 bg-clip-text text-transparent mb-4 sm:mb-6 text-center">
+                📅 Activity Heatmap
               </h2>
-              <div className="overflow-x-auto -mx-4">
-                <div className="min-w-[600px] px-4">
+              <div className="overflow-x-auto -mx-2 sm:-mx-4">
+                <div className="min-w-[600px] px-2 sm:px-4">
                   <CalendarHeatmap
                     startDate={
                       new Date(
@@ -295,24 +337,24 @@ const Profile = () => {
               </div>
             </div>
 
-            {/* Category Progress Chart */}
-            <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-lg border border-slate-200/60 dark:border-slate-700/60">
-              <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-6">
-                Progress by Category
+            {/* Enhanced Category Progress Chart */}
+            <div className="bg-gradient-to-br from-white/80 to-slate-50/80 dark:from-slate-800/80 dark:to-slate-900/80 backdrop-blur-sm rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-lg border border-slate-200/60 dark:border-slate-700/60">
+              <h2 className="text-lg sm:text-xl font-semibold bg-gradient-to-r from-slate-900 to-slate-700 dark:from-slate-100 dark:to-slate-300 bg-clip-text text-transparent mb-4 sm:mb-6 text-center">
+                📊 Progress by Category
               </h2>
-              <div className="h-96 sm:h-[28rem] mb-8">
+              <div className="h-[500px] sm:h-[600px] lg:h-[700px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     data={categoryChartData}
+                    layout="vertical"
                     margin={{
                       top: 20,
-                      right: 30,
-                      left: 20,
-                      bottom: 60,
+                      right: 20,
+                      left: 10,
+                      bottom: 20,
                     }}
-                    layout="vertical"
-                    barGap={2}
-                    barSize={16}
+                    barGap={4}
+                    barSize={20}
                   >
                     <defs>
                       {categoryChartData.map((_, index) => (
@@ -354,7 +396,7 @@ const Profile = () => {
                         />
                         <stop
                           offset="100%"
-                          stopColor="#10b981"
+                          stopColor="#059669"
                           stopOpacity={1}
                         />
                       </linearGradient>
@@ -362,7 +404,7 @@ const Profile = () => {
                     <CartesianGrid
                       strokeDasharray="3 3"
                       stroke="#e2e8f0"
-                      strokeOpacity={0.2}
+                      strokeOpacity={0.3}
                       horizontal={true}
                       vertical={false}
                     />
@@ -371,30 +413,34 @@ const Profile = () => {
                       tickLine={false}
                       axisLine={{ stroke: "#e2e8f0", strokeOpacity: 0.3 }}
                       tick={{ fill: "#64748b", fontSize: 12 }}
+                      domain={[0, "dataMax + 2"]}
                     />
                     <YAxis
                       dataKey="name"
                       type="category"
-                      width={100}
+                      width={120}
                       tick={{
                         fill: "#64748b",
-                        fontSize: 12,
+                        fontSize: 11,
                         textAnchor: "end",
-                        width: 100,
                       }}
-                      tickFormatter={(value) =>
-                        value.length > 12
-                          ? value.substring(0, 12) + "..."
-                          : value
-                      }
+                      tickFormatter={(value) => {
+                        // Find the full name for this category
+                        const category = categoryChartData.find(
+                          (cat) => cat.name === value
+                        );
+                        return category ? category.fullName : value;
+                      }}
                       axisLine={{ stroke: "#e2e8f0", strokeOpacity: 0.3 }}
+                      tickLine={false}
+                      interval={0}
                     />
                     <Tooltip content={<CustomCategoryTooltip />} />
                     <Legend
                       verticalAlign="top"
-                      height={36}
+                      height={40}
                       iconType="circle"
-                      iconSize={8}
+                      iconSize={10}
                       formatter={(value) => (
                         <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
                           {value}
@@ -404,7 +450,7 @@ const Profile = () => {
                     <Bar
                       dataKey="count"
                       name="Total"
-                      radius={[0, 4, 4, 0]}
+                      radius={[0, 6, 6, 0]}
                       className="drop-shadow-sm"
                     >
                       {categoryChartData.map((_, index) => (
@@ -419,7 +465,7 @@ const Profile = () => {
                       dataKey="solved"
                       name="Solved"
                       fill="url(#solvedGradient)"
-                      radius={[0, 4, 4, 0]}
+                      radius={[0, 6, 6, 0]}
                       className="drop-shadow-sm"
                     />
                   </BarChart>
@@ -430,26 +476,27 @@ const Profile = () => {
         )}
 
         {activeTab === "starred" && (
-          <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-lg border border-slate-200/60 dark:border-slate-700/60">
-            <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-6">
-              Starred Questions
+          <div className="bg-gradient-to-br from-white/80 to-slate-50/80 dark:from-slate-800/80 dark:to-slate-900/80 backdrop-blur-sm rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-lg border border-slate-200/60 dark:border-slate-700/60">
+            <h2 className="text-lg sm:text-xl font-semibold bg-gradient-to-r from-slate-900 to-slate-700 dark:from-slate-100 dark:to-slate-300 bg-clip-text text-transparent mb-4 sm:mb-6 text-center">
+              ⭐ Starred Questions
             </h2>
             {starredLoading ? (
               <LoadingSpinner />
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {starredData?.starred?.map((item) => (
-                  <div
+                  <motion.div
                     key={item._id}
-                    className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors duration-200"
+                    whileHover={{ scale: 1.01, y: -2 }}
+                    className="flex items-center justify-between p-3 sm:p-4 bg-gradient-to-r from-slate-50/80 to-white/80 dark:from-slate-800/80 dark:to-slate-700/80 backdrop-blur-sm rounded-xl border border-slate-200/50 dark:border-slate-600/50 hover:border-blue-300/50 dark:hover:border-blue-600/50 transition-all duration-200 shadow-sm hover:shadow-md"
                   >
                     <div className="flex-1 min-w-0">
-                      <h3 className="text-base font-medium text-slate-900 dark:text-white truncate">
+                      <h3 className="text-sm sm:text-base font-medium text-slate-900 dark:text-white truncate">
                         {item.questionId.problem}
                       </h3>
                       <div className="flex items-center space-x-2 mt-1">
                         <span
-                          className={`px-2 py-0.5 rounded text-xs ${
+                          className={`px-2 py-0.5 rounded-full text-xs font-medium ${
                             item.questionId.difficulty === "Easy"
                               ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400"
                               : item.questionId.difficulty === "Medium"
@@ -467,19 +514,22 @@ const Profile = () => {
                     <div className="flex items-center space-x-2 ml-2">
                       {item.status === "solved" && (
                         <span className="text-emerald-500">
-                          <FiTrendingUp className="w-5 h-5" />
+                          <FiTrendingUp className="w-4 h-4 sm:w-5 sm:h-5" />
                         </span>
                       )}
-                      <FiStar className="w-5 h-5 text-amber-500 fill-current" />
-                      <FiChevronRight className="w-5 h-5 text-slate-400" />
+                      <FiStar className="w-4 h-4 sm:w-5 sm:h-5 text-amber-500 fill-current" />
+                      <FiChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-slate-400" />
                     </div>
-                  </div>
+                  </motion.div>
                 ))}
                 {starredData?.starred?.length === 0 && (
-                  <p className="text-slate-500 dark:text-slate-400 text-center py-8">
-                    No starred questions yet. Star questions to save them for
-                    later!
-                  </p>
+                  <div className="text-center py-8 sm:py-12">
+                    <div className="text-4xl sm:text-6xl mb-4">⭐</div>
+                    <p className="text-slate-500 dark:text-slate-400 text-sm sm:text-base">
+                      No starred questions yet. Star questions to save them for
+                      later!
+                    </p>
+                  </div>
                 )}
               </div>
             )}

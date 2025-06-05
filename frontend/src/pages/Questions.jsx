@@ -3,11 +3,18 @@
 import { useState, useEffect } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { FiSearch, FiFilter, FiX } from "react-icons/fi";
+import {
+  FiSearch,
+  FiFilter,
+  FiX,
+  FiArrowLeft,
+  FiGrid,
+  FiList,
+  FiTrendingUp,
+} from "react-icons/fi";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import axios from "axios";
 import { toast } from "react-toastify";
-import { FiArrowLeft, FiStar, FiCheck, FiExternalLink } from "react-icons/fi";
 import { useAuth } from "../contexts/AuthContext";
 import QuestionCard from "../components/QuestionCard";
 import LoadingSpinner from "../components/LoadingSpinner";
@@ -24,15 +31,14 @@ const Questions = () => {
     searchParams.get("difficulty") || ""
   );
   const [showFilters, setShowFilters] = useState(false);
+  const [viewMode, setViewMode] = useState("grid");
   const [page, setPage] = useState(1);
 
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  // Define difficulty order for sorting
   const difficultyOrder = { Easy: 1, Medium: 2, Hard: 3 };
 
-  // Update URL params when filters change
   useEffect(() => {
     const params = new URLSearchParams();
     if (searchTerm) params.set("search", searchTerm);
@@ -41,7 +47,6 @@ const Questions = () => {
     setSearchParams(params);
   }, [searchTerm, selectedCategory, selectedDifficulty, setSearchParams]);
 
-  // Fetch questions
   const { data: questionsData, isLoading: questionsLoading } = useQuery(
     [
       "questions",
@@ -65,35 +70,31 @@ const Questions = () => {
     },
     {
       keepPreviousData: true,
-      staleTime: 5 * 60 * 1000, // 5 minutes
+      staleTime: 5 * 60 * 1000,
     }
   );
 
-  // Sort questions by difficulty
   const sortedQuestions = questionsData?.questions?.sort((a, b) => {
     return difficultyOrder[a.difficulty] - difficultyOrder[b.difficulty];
   });
 
-  // Fetch user progress
   const { data: progressData } = useQuery(
     "userProgress",
     () => axios.get("/api/progress").then((res) => res.data),
     {
       enabled: !!user,
-      staleTime: 2 * 60 * 1000, // 2 minutes
+      staleTime: 2 * 60 * 1000,
     }
   );
 
-  // Fetch categories for filter
   const { data: categoriesData } = useQuery(
     "categories",
     () => axios.get("/api/questions/stats/categories").then((res) => res.data),
     {
-      staleTime: 10 * 60 * 1000, // 10 minutes
+      staleTime: 10 * 60 * 1000,
     }
   );
 
-  // Update progress mutation
   const updateProgressMutation = useMutation(
     ({ questionId, updates }) =>
       axios.patch(`/api/progress/${questionId}`, updates),
@@ -141,153 +142,250 @@ const Questions = () => {
   const difficulties = ["Easy", "Medium", "Hard"];
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <Link to="/" className="text-gray-400 text-2xl">
-            <FiArrowLeft /> 
-        </Link>
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            Practice Questions
-          </h1>
-          <p className="text-gray-600 dark:text-gray-300 mt-1">
-            {questionsData?.pagination?.total || 0} problems available
-          </p>
-        </div>
-        <button
-          onClick={() => setShowFilters(!showFilters)}
-          className="btn-secondary flex items-center space-x-2 sm:hidden"
+    <div className="min-h-screen ">
+      <div className="container mx-auto px-3 py-4 max-w-7xl">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6"
         >
-          <FiFilter className="w-4 h-4" />
-          <span>Filters</span>
-        </button>
-      </div>
-
-      {/* Search and Filters */}
-      <div className="space-y-4">
-        {/* Search Bar */}
-        <div className="relative">
-          <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-          <input
-            type="text"
-            placeholder="Search questions..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="input pl-10 pr-4"
-          />
-        </div>
-
-        {/* Filters */}
-        <div className={`${showFilters ? "block" : "hidden"} sm:block`}>
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1">
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="input"
-              >
-                <option value="">All Categories</option>
-                {categories.map((cat) => (
-                  <option key={cat.category} value={cat.category}>
-                    {cat.category
-                      .replace("-", " ")
-                      .replace(/\b\w/g, (l) => l.toUpperCase())}{" "}
-                    ({cat.count})
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="flex-1">
-              <select
-                value={selectedDifficulty}
-                onChange={(e) => setSelectedDifficulty(e.target.value)}
-                className="input"
-              >
-                <option value="">All Difficulties</option>
-                {difficulties.map((diff) => (
-                  <option key={diff} value={diff}>
-                    {diff}
-                  </option>
-                ))}
-              </select>
-            </div>
-            {(searchTerm || selectedCategory || selectedDifficulty) && (
-              <button
-                onClick={clearFilters}
-                className="btn-secondary flex items-center space-x-2"
-              >
-                <FiX className="w-4 h-4" />
-                <span>Clear</span>
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Questions Grid */}
-      {questionsLoading ? (
-        <div className="flex justify-center py-12">
-          <LoadingSpinner size="lg" />
-        </div>
-      ) : (
-        <div className="space-y-6">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={`${selectedCategory}-${selectedDifficulty}-${searchTerm}-${page}`}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3 }}
-              className="grid grid-cols-1 lg:grid-cols-2 gap-6"
+          <div className="flex items-center gap-3">
+            <Link
+              to="/"
+              className="flex items-center justify-center w-10 h-10 bg-white dark:bg-gray-800 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400"
             >
-              {sortedQuestions?.map((question) => (
-                <QuestionCard
-                  key={question._id}
-                  question={question}
-                  progress={getProgressForQuestion(question._id)}
-                  onToggleStar={handleToggleStar}
-                  onToggleStatus={handleToggleStatus}
-                />
-              ))}
-            </motion.div>
-          </AnimatePresence>
-
-          {sortedQuestions?.length === 0 && (
-            <div className="text-center py-12">
-              <p className="text-gray-500 dark:text-gray-400 text-lg">
-                No questions found matching your criteria.
+              <FiArrowLeft className="w-5 h-5" />
+            </Link>
+            <div>
+              <h1 className="text-2xl lg:text-3xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-purple-800 dark:from-white dark:via-blue-200 dark:to-purple-200 bg-clip-text text-transparent">
+                Practice Questions
+              </h1>
+              <p className="text-gray-600 dark:text-gray-300 mt-1 flex items-center gap-2 text-sm">
+                <FiTrendingUp className="w-4 h-4" />
+                {questionsData?.pagination?.total || 0} problems available
               </p>
-              <button onClick={clearFilters} className="btn-primary mt-4">
-                Clear Filters
-              </button>
             </div>
-          )}
+          </div>
 
-          {/* Pagination */}
-          {questionsData?.pagination && questionsData.pagination.pages > 1 && (
-            <div className="flex justify-center space-x-2">
+          <div className="flex items-center gap-2">
+            <div className="flex bg-white dark:bg-gray-800 rounded-lg p-0.5 shadow-lg">
               <button
-                onClick={() => setPage(page - 1)}
-                disabled={page === 1}
-                className="btn-secondary disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={() => setViewMode("grid")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200 ${
+                  viewMode === "grid"
+                    ? "bg-blue-500 text-white shadow-md"
+                    : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                }`}
               >
-                Previous
+                <FiGrid className="w-4 h-4" />
+                <span className="hidden sm:inline">Grid</span>
               </button>
-              <span className="flex items-center px-4 py-2 text-gray-700 dark:text-gray-300">
-                Page {page} of {questionsData.pagination.pages}
-              </span>
               <button
-                onClick={() => setPage(page + 1)}
-                disabled={page === questionsData.pagination.pages}
-                className="btn-secondary disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={() => setViewMode("list")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200 ${
+                  viewMode === "list"
+                    ? "bg-blue-500 text-white shadow-md"
+                    : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                }`}
               >
-                Next
+                <FiList className="w-4 h-4" />
+                <span className="hidden sm:inline">List</span>
               </button>
             </div>
-          )}
-        </div>
-      )}
+
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className="lg:hidden flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 text-sm"
+            >
+              <FiFilter className="w-4 h-4" />
+              <span>Filters</span>
+            </button>
+          </div>
+        </motion.div>
+
+        {/* Search and Filters */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 p-4 mb-6"
+        >
+          {/* Search Bar */}
+          <div className="relative mb-4">
+            <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <input
+              type="text"
+              placeholder="Search questions by title, tags, or description..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm"
+            />
+          </div>
+
+          {/* Filters */}
+          <div className={`${showFilters ? "block" : "hidden"} lg:block`}>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Category
+                </label>
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm"
+                >
+                  <option value="">All Categories</option>
+                  {categories.map((cat) => (
+                    <option key={cat.category} value={cat.category}>
+                      {cat.category
+                        .replace("-", " ")
+                        .replace(/\b\w/g, (l) => l.toUpperCase())}{" "}
+                      ({cat.count})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Difficulty
+                </label>
+                <select
+                  value={selectedDifficulty}
+                  onChange={(e) => setSelectedDifficulty(e.target.value)}
+                  className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm"
+                >
+                  <option value="">All Difficulties</option>
+                  {difficulties.map((diff) => (
+                    <option key={diff} value={diff}>
+                      {diff}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {(searchTerm || selectedCategory || selectedDifficulty) && (
+                <div className="flex items-end">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={clearFilters}
+                    className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition-all duration-200 shadow-lg hover:shadow-xl text-sm"
+                  >
+                    <FiX className="w-4 h-4" />
+                    <span>Clear</span>
+                  </motion.button>
+                </div>
+              )}
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Questions Grid/List */}
+        {questionsLoading ? (
+          <div className="flex justify-center py-16">
+            <LoadingSpinner size="lg" />
+          </div>
+        ) : (
+          <div className="space-y-6">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={`${selectedCategory}-${selectedDifficulty}-${searchTerm}-${page}-${viewMode}`}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+                className={
+                  viewMode === "grid"
+                    ? "grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4"
+                    : "space-y-3"
+                }
+              >
+                {sortedQuestions?.map((question, index) => (
+                  <motion.div
+                    key={question._id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                  >
+                    <QuestionCard
+                      question={question}
+                      progress={getProgressForQuestion(question._id)}
+                      onToggleStar={handleToggleStar}
+                      onToggleStatus={handleToggleStatus}
+                    />
+                  </motion.div>
+                ))}
+              </motion.div>
+            </AnimatePresence>
+
+            {sortedQuestions?.length === 0 && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="text-center py-16"
+              >
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl p-8 max-w-md mx-auto">
+                  <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <FiSearch className="w-8 h-8 text-gray-400" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                    No questions found
+                  </h3>
+                  <p className="text-gray-500 dark:text-gray-400 mb-4 text-sm">
+                    Try adjusting your search criteria or clear the filters.
+                  </p>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={clearFilters}
+                    className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition-all duration-200 shadow-lg hover:shadow-xl text-sm"
+                  >
+                    Clear Filters
+                  </motion.button>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Pagination */}
+            {questionsData?.pagination &&
+              questionsData.pagination.pages > 1 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-6"
+                >
+                  <div className="flex items-center gap-2">
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => setPage(page - 1)}
+                      disabled={page === 1}
+                      className="px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg font-medium shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 text-sm"
+                    >
+                      Previous
+                    </motion.button>
+
+                    <div className="flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg font-medium shadow-lg text-sm">
+                      Page {page} of {questionsData.pagination.pages}
+                    </div>
+
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => setPage(page + 1)}
+                      disabled={page === questionsData.pagination.pages}
+                      className="px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg font-medium shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 text-sm"
+                    >
+                      Next
+                    </motion.button>
+                  </div>
+                </motion.div>
+              )}
+          </div>
+        )}
+      </div>
     </div>
   );
 };
