@@ -439,7 +439,7 @@ const Home = () => {
                   className="flex-shrink-0 relative w-full max-w-xs mx-auto lg:mx-0 mt-6 sm:mt-10 md:mt-12"
                   variants={itemVariants}
                 >
-                  <div className="relative w-40 h-40 sm:w-48 sm:h-48 md:w-56 md:h-56 lg:w-64 lg:h-64 mx-auto">
+                  <div className="relative  w-56 h-56 lg:w-64 lg:h-64 mx-auto animate-bounce mt-8">
                     <div className="absolute inset-0 rounded-full bg-gradient-to-br from-blue-100 via-indigo-100 to-purple-100 dark:from-blue-900/30 dark:via-indigo-900/30 dark:to-purple-900/30 flex items-center justify-center p-6 sm:p-8 shadow-2xl border border-blue-200/50 dark:border-blue-700/50">
                       <div className="bar">
                         <div className="ball bg-gradient-to-r from-blue-500 to-indigo-500"></div>
