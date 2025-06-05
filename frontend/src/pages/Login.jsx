@@ -175,7 +175,7 @@ const Login = () => {
               variants={itemVariants}
               type="submit"
               disabled={loading}
-              className="w-full btn-primary flex items-center justify-center space-x-2 py-3"
+              className="w-full btn-primary bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 flex items-center justify-center space-x-2 py-3"
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.99 }}
             >

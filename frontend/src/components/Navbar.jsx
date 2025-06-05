@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import avatar from "./avatar.png";
 import {
   FiMenu,
   FiX,
@@ -21,7 +22,7 @@ import ProgressBar from "./ProgressBar";
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const { user, logout } = useAuth();
+  const { user, logout, loading } = useAuth();
   const { isDark, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
@@ -66,25 +67,136 @@ const Navbar = () => {
     { path: "/questions", label: "Questions" },
   ];
 
+  // Get display name with fallback
+  const getDisplayName = () => {
+    if (!user) return "";
+    if (user.displayName) return user.displayName.split(" ")[0];
+    return user.email ? user.email.split("@")[0] : "User";
+  };
+
+  // Show loading state while auth is initializing
+  if (loading) {
+    return (
+      <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200/60 dark:border-slate-700/60 sticky top-0 z-50 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
+              dark DSA
+            </span>
+            <div className="animate-pulse">Loading...</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <nav className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200/60 dark:border-slate-700/60 sticky top-0 z-50 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          {/* Left side - Logo and Mobile Progress */}
-          <div className="flex items-center flex-1 md:flex-none">
-            {/* Logo */}
+        <div className="flex items-center h-16">
+          {/* Mobile: User menu (left) */}
+          {user && (
+            <div className="flex md:hidden items-center mr-4 order-1">
+              <div className="relative">
+                <button
+                  onClick={() => setShowUserMenu(!showUserMenu)}
+                  className="flex items-center space-x-2 p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200 border border-transparent hover:border-slate-200 dark:hover:border-slate-700"
+                >
+                  <div className="relative">
+                    <img
+                      src={avatar}
+                      alt={user.displayName || "User"}
+                      className="w-8 h-8 rounded-full border-2 border-blue-500 dark:border-blue-400 shadow-sm"
+                      onError={(e) => {
+                        e.target.src = { avatar };
+                      }}
+                    />
+                    {totalSolved > 0 && (
+                      <div className="absolute -bottom-1 -right-1 bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-semibold shadow-sm">
+                        {totalSolved}
+                      </div>
+                    )}
+                  </div>
+                </button>
+
+                <AnimatePresence>
+                  {showUserMenu && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                      transition={{ duration: 0.2 }}
+                      className="absolute left-0 mt-2 w-56 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md rounded-xl shadow-xl border border-slate-200/60 dark:border-slate-700/60 py-1 z-50"
+                    >
+                      <div className="px-4 py-3 border-b border-slate-200/60 dark:border-slate-700/60">
+                        <div className="text-sm font-semibold bg-gradient-to-r from-slate-900 to-slate-700 dark:from-slate-100 dark:to-slate-300 bg-clip-text text-transparent">
+                          {user.displayName || user.email || "User"}
+                        </div>
+                        <div className="text-xs text-slate-500 dark:text-slate-400">
+                          {user.email || "No email"}
+                        </div>
+                      </div>
+                      <div className="px-4 py-3 border-b border-slate-200/60 dark:border-slate-700/60">
+                        <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400 mb-2">
+                          <span className="font-medium">Progress</span>
+                          <span className="font-semibold">
+                            {totalSolved}/{totalQuestions}
+                          </span>
+                        </div>
+                        <ProgressBar
+                          solved={totalSolved}
+                          total={totalQuestions}
+                          height="h-2"
+                          className="mb-1"
+                        />
+                        <div className="text-xs text-slate-400 dark:text-slate-500 text-center mt-1">
+                          {Math.round((totalSolved / totalQuestions) * 100)}%
+                          Complete
+                        </div>
+                      </div>
+                      <Link
+                        to="/profile"
+                        className="flex items-center space-x-3 px-4 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors duration-200"
+                        onClick={() => setShowUserMenu(false)}
+                      >
+                        <FiUser className="w-4 h-4" />
+                        <span className="font-medium">Profile</span>
+                      </Link>
+                      {user.isAdmin && (
+                        <Link
+                          to="/admin"
+                          className="flex items-center space-x-3 px-4 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors duration-200"
+                          onClick={() => setShowUserMenu(false)}
+                        >
+                          <FiSettings className="w-4 h-4" />
+                          <span className="font-medium">Admin Panel</span>
+                        </Link>
+                      )}
+                      <button
+                        onClick={handleLogout}
+                        className="flex items-center space-x-3 w-full px-4 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors duration-200"
+                      >
+                        <FiLogOut className="w-4 h-4" />
+                        <span className="font-medium">Logout</span>
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </div>
+          )}
+
+          {/* Logo */}
+          <div className="flex items-center order-2">
             <Link to="/" className="flex items-center space-x-2 flex-shrink-0">
-              <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent hidden sm:block">
-                dark DSA
-              </span>
-              <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent sm:hidden">
+              <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
                 dark DSA
               </span>
             </Link>
           </div>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-6 flex-1 mx-8">
+          {/* Desktop: Navigation */}
+          <div className="hidden md:flex items-center space-x-6 flex-1 mx-8 order-3">
             {navLinks.map((link) => (
               <Link
                 key={link.path}
@@ -107,9 +219,8 @@ const Navbar = () => {
             ))}
           </div>
 
-          {/* Right side actions */}
-          <div className="flex items-center space-x-2 md:space-x-3">
-            {/* Theme toggle */}
+          {/* Desktop: User menu and actions (right) */}
+          <div className="hidden md:flex items-center space-x-3 order-4">
             <button
               onClick={toggleTheme}
               className="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-300 transition-all duration-200"
@@ -122,7 +233,6 @@ const Navbar = () => {
               )}
             </button>
 
-            {/* User menu */}
             {user ? (
               <div className="relative">
                 <button
@@ -131,9 +241,12 @@ const Navbar = () => {
                 >
                   <div className="relative">
                     <img
-                      src={user.avatar || "/default-avatar.png"}
-                      alt={user.name}
+                      src={avatar}
+                      alt={user.displayName || "User"}
                       className="w-8 h-8 rounded-full border-2 border-blue-500 dark:border-blue-400 shadow-sm"
+                      onError={(e) => {
+                        e.target.src = { avatar };
+                      }}
                     />
                     {totalSolved > 0 && (
                       <div className="absolute -bottom-1 -right-1 bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-semibold shadow-sm">
@@ -141,8 +254,8 @@ const Navbar = () => {
                       </div>
                     )}
                   </div>
-                  <span className="hidden md:block text-sm font-medium text-slate-700 dark:text-slate-300">
-                    {user.name.split(" ")[0]}
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                    {getDisplayName()}
                   </span>
                 </button>
 
@@ -157,10 +270,10 @@ const Navbar = () => {
                     >
                       <div className="px-4 py-3 border-b border-slate-200/60 dark:border-slate-700/60">
                         <div className="text-sm font-semibold bg-gradient-to-r from-slate-900 to-slate-700 dark:from-slate-100 dark:to-slate-300 bg-clip-text text-transparent">
-                          {user.name}
+                          {user.displayName || user.email || "User"}
                         </div>
-                        <div className="text-xs text-slate-500 dark:text-slate-400">
-                          {user.email}
+                        <div className="text-xs text-slate-400 dark:text-slate-500">
+                          {user.email || "No email"}
                         </div>
                       </div>
                       <div className="px-4 py-3 border-b border-slate-200/60 dark:border-slate-700/60">
@@ -211,7 +324,7 @@ const Navbar = () => {
                 </AnimatePresence>
               </div>
             ) : (
-              <div className="hidden md:flex items-center space-x-3">
+              <div className="flex items-center space-x-3">
                 <Link
                   to="/login"
                   className="text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium text-sm px-3 py-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all duration-200"
@@ -226,19 +339,34 @@ const Navbar = () => {
                 </Link>
               </div>
             )}
+          </div>
 
-            {/* Mobile menu button */}
-            <button
-              onClick={() => setIsOpen(!isOpen)}
-              className="md:hidden p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-300 transition-all duration-200"
-              aria-label="Toggle menu"
-            >
-              {isOpen ? (
-                <FiX className="w-6 h-6" />
-              ) : (
-                <FiMenu className="w-6 h-6" />
-              )}
-            </button>
+          {/* Mobile: Menu button (right) */}
+          <div className="md:hidden ml-auto order-5">
+            <div className="flex items-center ">
+              <button
+                onClick={toggleTheme}
+                className="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-300 transition-all duration-200"
+                aria-label="Toggle theme"
+              >
+                {isDark ? (
+                  <FiSun className="w-5 h-5" />
+                ) : (
+                  <FiMoon className="w-5 h-5" />
+                )}
+              </button>
+              <button
+                onClick={() => setIsOpen(!isOpen)}
+                className="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-300 transition-all duration-200"
+                aria-label="Toggle menu"
+              >
+                {isOpen ? (
+                  <FiX className="w-6 h-6" />
+                ) : (
+                  <FiMenu className="w-6 h-6" />
+                )}
+              </button>
+            </div>
           </div>
         </div>
 

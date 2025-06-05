@@ -37,7 +37,6 @@ const Register = () => {
 
   const validateForm = () => {
     const newErrors = {};
-    const googleDomains = ["gmail.com", "googlemail.com", "google.com"];
 
     if (!formData.name.trim()) {
       newErrors.name = "Name is required";
@@ -47,12 +46,7 @@ const Register = () => {
       newErrors.email = "Email is required";
     } else {
       const emailParts = formData.email.split("@");
-      if (
-        emailParts.length !== 2 ||
-        !googleDomains.includes(emailParts[1].toLowerCase())
-      ) {
-        newErrors.email = "Please use a Google email address (Gmail)";
-      } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      if (!/\S+@\S+\.\S+/.test(formData.email)) {
         newErrors.email = "Email is invalid";
       }
     }
@@ -87,7 +81,7 @@ const Register = () => {
     );
 
     if (result.success) {
-      navigate("/");
+      navigate("/login");
     }
 
     setLoading(false);
@@ -247,7 +241,7 @@ const Register = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full btn-primary flex items-center justify-center space-x-2"
+              className="w-full btn-primary bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-400 flex items-center justify-center space-x-2"
             >
               {loading ? (
                 <LoadingSpinner size="sm" />
