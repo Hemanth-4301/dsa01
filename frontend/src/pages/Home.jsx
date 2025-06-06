@@ -366,7 +366,7 @@ const Home = () => {
                     variants={itemVariants}
                   >
                     <motion.a
-                      href="/register"
+                      href="#categories"
                       className="inline-flex items-center justify-center px-4 sm:px-6 py-3 text-sm sm:text-base font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-xl shadow-lg hover:shadow-xl transform transition-all duration-200 hover:scale-105 border border-blue-500/20"
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.98 }}
