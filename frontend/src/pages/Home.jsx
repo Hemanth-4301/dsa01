@@ -495,10 +495,7 @@ const Home = () => {
                     <div className="absolute inset-0 flex items-center justify-center mt-16 sm:mt-20 md:mt-24">
                       <div className="text-center mt-6">
                         <span className="block text-xl md:text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
-                          {totalSolved}
-                        </span>
-                        <span className="block text-xl text-slate-600 dark:text-slate-400 font-medium">
-                          of {totalQuestions}
+                          {totalSolved}/{totalQuestions}
                         </span>
                       </div>
                     </div>
