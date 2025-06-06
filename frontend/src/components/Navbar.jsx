@@ -174,7 +174,7 @@ const Navbar = () => {
                 <span className="text-white font-bold text-sm">D</span>
               </div>
               <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
-                dark DSA
+                dsa01
               </span>
             </Link>
           </motion.div>
@@ -330,43 +330,6 @@ const Navbar = () => {
                           height="h-3"
                           className="mb-4"
                         />
-                        <div className="grid grid-cols-3 gap-3">
-                          <div className="text-center p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl">
-                            <div className="flex items-center justify-center mb-2">
-                              <FiTarget className="w-5 h-5 text-emerald-600" />
-                            </div>
-                            <div className="text-xl font-bold text-emerald-600 mb-1">
-                              {totalSolved}
-                            </div>
-                            <div className="text-xs text-emerald-700 dark:text-emerald-400 font-medium">
-                              Solved
-                            </div>
-                          </div>
-                          <div className="text-center p-3 bg-amber-50 dark:bg-amber-900/20 rounded-xl">
-                            <div className="flex items-center justify-center mb-2">
-                              <FiStar className="w-5 h-5 text-amber-600" />
-                            </div>
-                            <div className="text-xl font-bold text-amber-600 mb-1">
-                              {totalStarred}
-                            </div>
-                            <div className="text-xs text-amber-700 dark:text-amber-400 font-medium">
-                              Starred
-                            </div>
-                          </div>
-                          <div className="text-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
-                            <div className="flex items-center justify-center mb-2">
-                              <span className="text-blue-600 text-lg font-bold">
-                                %
-                              </span>
-                            </div>
-                            <div className="text-xl font-bold text-blue-600 mb-1">
-                              {Math.round((totalSolved / totalQuestions) * 100)}
-                            </div>
-                            <div className="text-xs text-blue-700 dark:text-blue-400 font-medium">
-                              Complete
-                            </div>
-                          </div>
-                        </div>
                       </div>
 
                       {/* Enhanced Menu Items */}
@@ -569,43 +532,7 @@ const Navbar = () => {
                         height="h-2.5"
                         className="mb-3"
                       />
-                      <div className="grid grid-cols-3 gap-3">
-                        <div className="text-center p-2.5 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg">
-                          <div className="flex items-center justify-center mb-1">
-                            <FiTarget className="w-4 h-4 text-emerald-600" />
-                          </div>
-                          <div className="text-lg font-bold text-emerald-600 mb-0.5">
-                            {totalSolved}
-                          </div>
-                          <div className="text-xs text-emerald-700 dark:text-emerald-400 font-medium">
-                            Solved
-                          </div>
-                        </div>
-                        <div className="text-center p-2.5 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
-                          <div className="flex items-center justify-center mb-1">
-                            <FiStar className="w-4 h-4 text-amber-600" />
-                          </div>
-                          <div className="text-lg font-bold text-amber-600 mb-0.5">
-                            {totalStarred}
-                          </div>
-                          <div className="text-xs text-amber-700 dark:text-amber-400 font-medium">
-                            Starred
-                          </div>
-                        </div>
-                        <div className="text-center p-2.5 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                          <div className="flex items-center justify-center mb-1">
-                            <span className="text-blue-600 text-sm font-bold">
-                              %
-                            </span>
-                          </div>
-                          <div className="text-lg font-bold text-blue-600 mb-0.5">
-                            {Math.round((totalSolved / totalQuestions) * 100)}
-                          </div>
-                          <div className="text-xs text-blue-700 dark:text-blue-400 font-medium">
-                            Complete
-                          </div>
-                        </div>
-                      </div>
+                      <div className="grid grid-cols-3 gap-3"></div>
                     </div>
 
                     {/* Menu Items */}

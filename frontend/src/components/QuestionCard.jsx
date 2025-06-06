@@ -148,7 +148,6 @@ const QuestionCard = ({ question, progress, onToggleStar, onToggleStatus }) => {
                 : "bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 hover:from-gray-200 hover:to-gray-300 dark:from-gray-700 dark:to-gray-600 dark:text-gray-300 dark:hover:from-gray-600 dark:hover:to-gray-500"
             }`}
           >
-            <FiCheck className="w-3 h-3 mr-1" />
             {isSolved ? "Solved ✓" : "Mark as Solved"}
           </motion.button>
 
