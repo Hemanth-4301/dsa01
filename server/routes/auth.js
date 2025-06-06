@@ -165,7 +165,7 @@ router.post(
 
       res.status(201).json({
         message:
-          "User created successfully. Please verify your email with the OTP sent.",
+          "User created successfully. Please verify your email with the OTP sent.This email might be there in spam folder please checkout there once",
         userId: user._id,
       });
     } catch (error) {

@@ -322,14 +322,14 @@ const Home = () => {
       {/* Hero Section */}
       <section id="hero">
         <motion.div
-          className="relative overflow-hidden bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-blue-900/20 dark:to-indigo-900/30 rounded-2xl sm:rounded-3xl border border-slate-200/60 dark:border-slate-700/60 mb-8 sm:mb-10 shadow-xl dark:shadow-2xl"
+          className="relative overflow-hidden bg-gradient-to-br from-yellow-200 via-blue-50 to-orange-200 dark:from-slate-900 dark:via-blue-900/20 dark:to-indigo-900/30 rounded-2xl sm:rounded-3xl border border-slate-200/60 dark:border-slate-700/60 mb-8 sm:mb-10 shadow-xl dark:shadow-2xl"
           variants={containerVariants}
           initial="hidden"
           animate="visible"
         >
           {/* Grid background with responsive sizing */}
           <div className="absolute inset-0 pointer-events-none">
-            <div className="absolute inset-0 bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)] bg-[size:24px_24px] dark:bg-[linear-gradient(to_right,#334155_1px,transparent_1px),linear-gradient(to_bottom,#334155_1px,transparent_1px)] opacity-30"></div>
+            <div className="absolute inset-0 bg-[linear-gradient(to_right,#e2e8f0_2px,transparent_2px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)] bg-[size:24px_24px] dark:bg-[linear-gradient(to_right,#334155_1px,transparent_1px),linear-gradient(to_bottom,#334155_1px,transparent_1px)] opacity-30"></div>
             <div className="absolute inset-0 bg-gradient-to-br from-white/60 via-transparent to-blue-500/5 dark:from-slate-900/80 dark:via-transparent dark:to-blue-500/10"></div>
           </div>
 
@@ -366,7 +366,7 @@ const Home = () => {
                     variants={itemVariants}
                   >
                     <motion.a
-                      href="#categories"
+                      href="/register"
                       className="inline-flex items-center justify-center px-4 sm:px-6 py-3 text-sm sm:text-base font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-xl shadow-lg hover:shadow-xl transform transition-all duration-200 hover:scale-105 border border-blue-500/20"
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.98 }}

@@ -59,7 +59,12 @@ const QuestionCard = ({ question, progress, onToggleStar, onToggleStatus }) => {
               to={`/questions/${question._id}`}
               className="group/link block"
             >
-              <h3 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white leading-tight mb-1 group-hover/link:text-blue-600 dark:group-hover/link:text-blue-400 transition-colors duration-200">
+              <h3
+                style={{
+                  textDecoration: "underLine",
+                }}
+                className="text-base sm:text-lg font-bold text-blue-500 leading-tight mb-1 group-hover/link:text-blue-600 dark:group-hover/link:text-blue-400 transition-colors duration-200"
+              >
                 {question.problem}
               </h3>
               <div className="w-0 group-hover/link:w-full h-0.5 bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-300 rounded-full" />

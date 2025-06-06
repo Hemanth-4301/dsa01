@@ -102,6 +102,7 @@ const Navbar = () => {
   const navLinks = [
     { path: "/", label: "Home", icon: "🏠" },
     { path: "/questions", label: "Questions", icon: "📝" },
+    { path: "/about", label: "About us", icon: "ℹ️" },
   ];
 
   // Get display name with fallback
