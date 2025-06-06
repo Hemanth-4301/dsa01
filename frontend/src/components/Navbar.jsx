@@ -23,7 +23,24 @@ import { useAuth } from "../contexts/AuthContext";
 import { useTheme } from "../contexts/ThemeContext";
 import { useQuery } from "react-query";
 import axios from "axios";
-import ProgressBar from "./ProgressBar";
+
+// Custom Progress Bar Component
+const ProgressBar = ({ solved, total, height = "h-3", className = "" }) => {
+  const percentage = Math.min((solved / total) * 100, 100);
+
+  return (
+    <div
+      className={`w-full bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden ${height} ${className}`}
+    >
+      <motion.div
+        className="h-full bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full shadow-sm"
+        initial={{ width: 0 }}
+        animate={{ width: `${percentage}%` }}
+        transition={{ duration: 1, ease: "easeOut" }}
+      />
+    </div>
+  );
+};
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -97,16 +114,28 @@ const Navbar = () => {
   // Get user level based on solved problems
   const getUserLevel = () => {
     if (totalSolved >= 100)
-      return { level: "Expert", color: "text-purple-600", bg: "bg-purple-100" };
+      return {
+        level: "Expert",
+        color: "text-purple-600",
+        bg: "bg-purple-100 dark:bg-purple-900/30",
+      };
     if (totalSolved >= 50)
-      return { level: "Advanced", color: "text-blue-600", bg: "bg-blue-100" };
+      return {
+        level: "Advanced",
+        color: "text-blue-600",
+        bg: "bg-blue-100 dark:bg-blue-900/30",
+      };
     if (totalSolved >= 20)
       return {
         level: "Intermediate",
         color: "text-emerald-600",
-        bg: "bg-emerald-100",
+        bg: "bg-emerald-100 dark:bg-emerald-900/30",
       };
-    return { level: "Beginner", color: "text-amber-600", bg: "bg-amber-100" };
+    return {
+      level: "Beginner",
+      color: "text-amber-600",
+      bg: "bg-amber-100 dark:bg-amber-900/30",
+    };
   };
 
   const userLevel = getUserLevel();
@@ -209,21 +238,15 @@ const Navbar = () => {
                 >
                   <div className="relative">
                     <img
-                      src={avatar || "/placeholder.svg"}
+                      src={avatar || "/placeholder.svg?height=40&width=40"}
                       alt={user.displayName || "User"}
-                      className="w-9 h-9 rounded-full border-2 border-blue-500/30 dark:border-blue-400/30 shadow-md object-cover group-hover:border-blue-500/50 transition-all duration-200"
-                      onError={(e) => {
-                        e.target.src = avatar;
-                      }}
+                      className="w-10 h-10 rounded-full border-2 border-blue-500/30 shadow-lg object-cover"
                     />
-                    {totalSolved > 0 && (
-                      <div className="absolute -bottom-1 -right-1 bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold shadow-lg border-2 border-white dark:border-slate-800">
-                        {totalSolved > 99 ? "99+" : totalSolved}
-                      </div>
-                    )}
-                    <div className="absolute -top-1 -left-1 w-3 h-3 bg-emerald-500 rounded-full border-2 border-white dark:border-slate-800 animate-pulse"></div>
+                    <div className="absolute -bottom-1 -right-1 bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold shadow-lg">
+                      {totalSolved > 99 ? "99+" : totalSolved}
+                    </div>
                   </div>
-                  <div className="flex items-center space-x-1">
+                  <div className="flex items-center space-x-2">
                     <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 max-w-24 truncate">
                       {getDisplayName()}
                     </span>
@@ -249,36 +272,38 @@ const Navbar = () => {
                       }}
                     >
                       {/* Enhanced User Info Header */}
-                      <div className="px-5 py-4 bg-gradient-to-r from-blue-50/50 to-indigo-50/50 dark:from-blue-900/20 dark:to-indigo-900/20 border-b border-slate-200/50 dark:border-slate-700/50">
-                        <div className="flex items-center space-x-4">
-                          <div className="relative">
+                      <div className="px-6 py-5 bg-gradient-to-r from-blue-50/50 to-indigo-50/50 dark:from-blue-900/20 dark:to-indigo-900/20 border-b border-slate-200/50 dark:border-slate-700/50">
+                        <div className="flex items-start space-x-4">
+                          <div className="relative flex-shrink-0">
                             <img
-                              src={avatar || "/placeholder.svg"}
+                              src={
+                                avatar || "/placeholder.svg?height=56&width=56"
+                              }
                               alt={user.displayName || "User"}
-                              className="w-12 h-12 rounded-full border-3 border-blue-500/30 shadow-lg object-cover"
+                              className="w-14 h-14 rounded-full border-3 border-blue-500/30 shadow-lg object-cover"
                             />
                             <div className="absolute -bottom-1 -right-1 bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-xs rounded-full h-6 w-6 flex items-center justify-center font-bold shadow-lg">
                               {totalSolved > 99 ? "99+" : totalSolved}
                             </div>
                           </div>
                           <div className="flex-1 min-w-0">
-                            <div className="flex items-center space-x-2">
-                              <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 truncate">
+                            <div className="flex items-start justify-between mb-1">
+                              <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 truncate pr-2">
                                 {user.displayName || user.email || "User"}
                               </h3>
                               {user.isAdmin && (
-                                <span className="inline-flex items-center px-2 py-1 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs rounded-full font-medium">
+                                <span className="inline-flex items-center px-2 py-1 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs rounded-full font-medium flex-shrink-0">
                                   <FiShield className="w-3 h-3 mr-1" />
                                   Admin
                                 </span>
                               )}
                             </div>
-                            <p className="text-sm text-slate-600 dark:text-slate-400 truncate">
+                            <p className="text-sm text-slate-600 dark:text-slate-400 truncate mb-2">
                               {user.email}
                             </p>
-                            <div className="flex items-center space-x-2 mt-1">
+                            <div className="flex items-center">
                               <span
-                                className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${userLevel.bg} ${userLevel.color}`}
+                                className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${userLevel.bg} ${userLevel.color}`}
                               >
                                 <FiAward className="w-3 h-3 mr-1" />
                                 {userLevel.level}
@@ -289,8 +314,8 @@ const Navbar = () => {
                       </div>
 
                       {/* Enhanced Progress Section */}
-                      <div className="px-5 py-4 border-b border-slate-200/50 dark:border-slate-700/50">
-                        <div className="flex justify-between items-center mb-3">
+                      <div className="px-6 py-5 border-b border-slate-200/50 dark:border-slate-700/50">
+                        <div className="flex justify-between items-center mb-4">
                           <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center">
                             <FiTrendingUp className="w-4 h-4 mr-2 text-blue-500" />
                             Progress Overview
@@ -303,36 +328,38 @@ const Navbar = () => {
                           solved={totalSolved}
                           total={totalQuestions}
                           height="h-3"
-                          className="mb-3"
+                          className="mb-4"
                         />
                         <div className="grid grid-cols-3 gap-3">
-                          <div className="text-center p-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg">
-                            <div className="flex items-center justify-center mb-1">
-                              <FiTarget className="w-4 h-4 text-emerald-600" />
+                          <div className="text-center p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl">
+                            <div className="flex items-center justify-center mb-2">
+                              <FiTarget className="w-5 h-5 text-emerald-600" />
                             </div>
-                            <div className="text-lg font-bold text-emerald-600">
+                            <div className="text-xl font-bold text-emerald-600 mb-1">
                               {totalSolved}
                             </div>
                             <div className="text-xs text-emerald-700 dark:text-emerald-400 font-medium">
                               Solved
                             </div>
                           </div>
-                          <div className="text-center p-2 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
-                            <div className="flex items-center justify-center mb-1">
-                              <FiStar className="w-4 h-4 text-amber-600" />
+                          <div className="text-center p-3 bg-amber-50 dark:bg-amber-900/20 rounded-xl">
+                            <div className="flex items-center justify-center mb-2">
+                              <FiStar className="w-5 h-5 text-amber-600" />
                             </div>
-                            <div className="text-lg font-bold text-amber-600">
+                            <div className="text-xl font-bold text-amber-600 mb-1">
                               {totalStarred}
                             </div>
                             <div className="text-xs text-amber-700 dark:text-amber-400 font-medium">
                               Starred
                             </div>
                           </div>
-                          <div className="text-center p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                            <div className="flex items-center justify-center mb-1">
-                              <span className="text-blue-600 text-sm">%</span>
+                          <div className="text-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
+                            <div className="flex items-center justify-center mb-2">
+                              <span className="text-blue-600 text-lg font-bold">
+                                %
+                              </span>
                             </div>
-                            <div className="text-lg font-bold text-blue-600">
+                            <div className="text-xl font-bold text-blue-600 mb-1">
                               {Math.round((totalSolved / totalQuestions) * 100)}
                             </div>
                             <div className="text-xs text-blue-700 dark:text-blue-400 font-medium">
@@ -346,15 +373,15 @@ const Navbar = () => {
                       <div className="py-2">
                         <Link
                           to="/profile"
-                          className="flex items-center space-x-3 px-5 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-all duration-200 group"
+                          className="flex items-center space-x-4 px-6 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-all duration-200 group"
                           onClick={() => setShowUserMenu(false)}
                         >
-                          <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg group-hover:bg-blue-200 dark:group-hover:bg-blue-900/50 transition-colors duration-200">
+                          <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg group-hover:bg-blue-200 dark:group-hover:bg-blue-900/50 transition-colors duration-200 flex-shrink-0">
                             <FiUser className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                           </div>
-                          <div>
-                            <span className="font-semibold">Profile</span>
-                            <p className="text-xs text-slate-500 dark:text-slate-400">
+                          <div className="flex-1">
+                            <span className="font-semibold block">Profile</span>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                               View your profile and stats
                             </p>
                           </div>
@@ -362,15 +389,17 @@ const Navbar = () => {
                         {user.isAdmin && (
                           <Link
                             to="/admin"
-                            className="flex items-center space-x-3 px-5 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-all duration-200 group"
+                            className="flex items-center space-x-4 px-6 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-all duration-200 group"
                             onClick={() => setShowUserMenu(false)}
                           >
-                            <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg group-hover:bg-purple-200 dark:group-hover:bg-purple-900/50 transition-colors duration-200">
+                            <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg group-hover:bg-purple-200 dark:group-hover:bg-purple-900/50 transition-colors duration-200 flex-shrink-0">
                               <FiSettings className="w-4 h-4 text-purple-600 dark:text-purple-400" />
                             </div>
-                            <div>
-                              <span className="font-semibold">Admin Panel</span>
-                              <p className="text-xs text-slate-500 dark:text-slate-400">
+                            <div className="flex-1">
+                              <span className="font-semibold block">
+                                Admin Panel
+                              </span>
+                              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                                 Manage platform settings
                               </p>
                             </div>
@@ -378,14 +407,14 @@ const Navbar = () => {
                         )}
                         <button
                           onClick={handleLogout}
-                          className="flex items-center space-x-3 w-full px-5 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-200 group"
+                          className="flex items-center space-x-4 w-full px-6 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-200 group"
                         >
-                          <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-lg group-hover:bg-red-200 dark:group-hover:bg-red-900/50 transition-colors duration-200">
+                          <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-lg group-hover:bg-red-200 dark:group-hover:bg-red-900/50 transition-colors duration-200 flex-shrink-0">
                             <FiLogOut className="w-4 h-4 text-red-600 dark:text-red-400" />
                           </div>
-                          <div>
-                            <span className="font-semibold">Logout</span>
-                            <p className="text-xs text-slate-500 dark:text-slate-400">
+                          <div className="flex-1 text-left">
+                            <span className="font-semibold block">Logout</span>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                               Sign out of your account
                             </p>
                           </div>
@@ -420,167 +449,6 @@ const Navbar = () => {
 
           {/* Enhanced Mobile Right Side */}
           <div className="flex md:hidden items-center space-x-2">
-            {user && (
-              <div className="relative" ref={userMenuRef}>
-                <motion.button
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => setShowUserMenu(!showUserMenu)}
-                  className="flex items-center p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200"
-                >
-                  <div className="relative">
-                    <img
-                      src={avatar || "/placeholder.svg"}
-                      alt={user.displayName || "User"}
-                      className="w-8 h-8 rounded-full border-2 border-blue-500/30 dark:border-blue-400/30 shadow-md object-cover"
-                      onError={(e) => {
-                        e.target.src = avatar;
-                      }}
-                    />
-                    {totalSolved > 0 && (
-                      <div className="absolute -bottom-1 -right-1 bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-[10px] rounded-full h-4 w-4 flex items-center justify-center font-bold shadow-lg">
-                        {totalSolved > 99 ? "+" : totalSolved}
-                      </div>
-                    )}
-                  </div>
-                </motion.button>
-
-                <AnimatePresence>
-                  {showUserMenu && (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.95, y: -10 }}
-                      animate={{ opacity: 1, scale: 1, y: 0 }}
-                      exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                      transition={{ duration: 0.2 }}
-                      className="absolute right-0 mt-2 w-[280px] max-w-[calc(100vw-2rem)] bg-white/95 dark:bg-slate-800/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-slate-200/50 dark:border-slate-700/50 py-3 z-50 overflow-hidden"
-                      style={{
-                        maxHeight: "85vh",
-                        overflowY: "auto",
-                      }}
-                    >
-                      {/* Mobile User Info Header */}
-                      <div className="px-4 py-4 bg-gradient-to-r from-blue-50/50 to-indigo-50/50 dark:from-blue-900/20 dark:to-indigo-900/20 border-b border-slate-200/50 dark:border-slate-700/50">
-                        <div className="flex items-center space-x-3">
-                          <div className="relative">
-                            <img
-                              src={avatar || "/placeholder.svg"}
-                              alt={user.displayName || "User"}
-                              className="w-12 h-12 rounded-full border-3 border-blue-500/30 shadow-lg object-cover"
-                            />
-                            <div className="absolute -bottom-1 -right-1 bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-xs rounded-full h-6 w-6 flex items-center justify-center font-bold shadow-lg">
-                              {totalSolved > 99 ? "99+" : totalSolved}
-                            </div>
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center space-x-2">
-                              <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 truncate">
-                                {user.displayName || user.email || "User"}
-                              </h3>
-                              {user.isAdmin && (
-                                <span className="inline-flex items-center px-1.5 py-0.5 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs rounded-full font-medium">
-                                  <FiShield className="w-2.5 h-2.5 mr-0.5" />
-                                  Admin
-                                </span>
-                              )}
-                            </div>
-                            <p className="text-xs text-slate-600 dark:text-slate-400 truncate">
-                              {user.email}
-                            </p>
-                            <span
-                              className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium mt-1 ${userLevel.bg} ${userLevel.color}`}
-                            >
-                              <FiAward className="w-2.5 h-2.5 mr-1" />
-                              {userLevel.level}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Mobile Progress Section */}
-                      <div className="px-4 py-3 border-b border-slate-200/50 dark:border-slate-700/50">
-                        <div className="flex justify-between items-center mb-2">
-                          <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center">
-                            <FiTrendingUp className="w-3 h-3 mr-1 text-blue-500" />
-                            Progress
-                          </span>
-                          <span className="text-xs font-bold text-slate-900 dark:text-slate-100">
-                            {totalSolved}/{totalQuestions}
-                          </span>
-                        </div>
-                        <ProgressBar
-                          solved={totalSolved}
-                          total={totalQuestions}
-                          height="h-2"
-                          className="mb-2"
-                        />
-                        <div className="grid grid-cols-3 gap-2">
-                          <div className="text-center p-1.5 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg">
-                            <div className="text-sm font-bold text-emerald-600">
-                              {totalSolved}
-                            </div>
-                            <div className="text-xs text-emerald-700 dark:text-emerald-400">
-                              Solved
-                            </div>
-                          </div>
-                          <div className="text-center p-1.5 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
-                            <div className="text-sm font-bold text-amber-600">
-                              {totalStarred}
-                            </div>
-                            <div className="text-xs text-amber-700 dark:text-amber-400">
-                              Starred
-                            </div>
-                          </div>
-                          <div className="text-center p-1.5 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                            <div className="text-sm font-bold text-blue-600">
-                              {Math.round((totalSolved / totalQuestions) * 100)}
-                              %
-                            </div>
-                            <div className="text-xs text-blue-700 dark:text-blue-400">
-                              Complete
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Mobile Menu Items */}
-                      <div className="py-1">
-                        <Link
-                          to="/profile"
-                          className="flex items-center space-x-3 px-4 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-all duration-200"
-                          onClick={() => setShowUserMenu(false)}
-                        >
-                          <div className="p-1.5 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                            <FiUser className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
-                          </div>
-                          <span className="font-medium">Profile</span>
-                        </Link>
-                        {user.isAdmin && (
-                          <Link
-                            to="/admin"
-                            className="flex items-center space-x-3 px-4 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-all duration-200"
-                            onClick={() => setShowUserMenu(false)}
-                          >
-                            <div className="p-1.5 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
-                              <FiSettings className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
-                            </div>
-                            <span className="font-medium">Admin Panel</span>
-                          </Link>
-                        )}
-                        <button
-                          onClick={handleLogout}
-                          className="flex items-center space-x-3 w-full px-4 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-200"
-                        >
-                          <div className="p-1.5 bg-red-100 dark:bg-red-900/30 rounded-lg">
-                            <FiLogOut className="w-3.5 h-3.5 text-red-600 dark:text-red-400" />
-                          </div>
-                          <span className="font-medium">Logout</span>
-                        </button>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            )}
-
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -640,6 +508,159 @@ const Navbar = () => {
                     </Link>
                   ))}
                 </div>
+
+                {/* User Profile Section for Mobile */}
+                {user && (
+                  <div className="pt-4 border-t border-slate-200/50 dark:border-slate-700/50">
+                    {/* User Info Header */}
+                    <div className="px-4 py-4 bg-gradient-to-r from-blue-50/50 to-indigo-50/50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl mb-4">
+                      <div className="flex items-start space-x-4">
+                        <div className="relative flex-shrink-0">
+                          <img
+                            src={
+                              avatar || "/placeholder.svg?height=48&width=48"
+                            }
+                            alt={user.displayName || "User"}
+                            className="w-12 h-12 rounded-full border-3 border-blue-500/30 shadow-lg object-cover"
+                          />
+                          <div className="absolute -bottom-1 -right-1 bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-xs rounded-full h-6 w-6 flex items-center justify-center font-bold shadow-lg">
+                            {totalSolved > 99 ? "99+" : totalSolved}
+                          </div>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between mb-1">
+                            <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 truncate pr-2">
+                              {user.displayName || user.email || "User"}
+                            </h3>
+                            {user.isAdmin && (
+                              <span className="inline-flex items-center px-2 py-0.5 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs rounded-full font-medium flex-shrink-0">
+                                <FiShield className="w-2.5 h-2.5 mr-0.5" />
+                                Admin
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-sm text-slate-600 dark:text-slate-400 truncate mb-2">
+                            {user.email}
+                          </p>
+                          <span
+                            className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${userLevel.bg} ${userLevel.color}`}
+                          >
+                            <FiAward className="w-3 h-3 mr-1" />
+                            {userLevel.level}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Progress Section */}
+                    <div className="px-4 py-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl mb-4">
+                      <div className="flex justify-between items-center mb-3">
+                        <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center">
+                          <FiTrendingUp className="w-4 h-4 mr-2 text-blue-500" />
+                          Progress
+                        </span>
+                        <span className="text-sm font-bold text-slate-900 dark:text-slate-100">
+                          {totalSolved}/{totalQuestions}
+                        </span>
+                      </div>
+                      <ProgressBar
+                        solved={totalSolved}
+                        total={totalQuestions}
+                        height="h-2.5"
+                        className="mb-3"
+                      />
+                      <div className="grid grid-cols-3 gap-3">
+                        <div className="text-center p-2.5 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg">
+                          <div className="flex items-center justify-center mb-1">
+                            <FiTarget className="w-4 h-4 text-emerald-600" />
+                          </div>
+                          <div className="text-lg font-bold text-emerald-600 mb-0.5">
+                            {totalSolved}
+                          </div>
+                          <div className="text-xs text-emerald-700 dark:text-emerald-400 font-medium">
+                            Solved
+                          </div>
+                        </div>
+                        <div className="text-center p-2.5 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
+                          <div className="flex items-center justify-center mb-1">
+                            <FiStar className="w-4 h-4 text-amber-600" />
+                          </div>
+                          <div className="text-lg font-bold text-amber-600 mb-0.5">
+                            {totalStarred}
+                          </div>
+                          <div className="text-xs text-amber-700 dark:text-amber-400 font-medium">
+                            Starred
+                          </div>
+                        </div>
+                        <div className="text-center p-2.5 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                          <div className="flex items-center justify-center mb-1">
+                            <span className="text-blue-600 text-sm font-bold">
+                              %
+                            </span>
+                          </div>
+                          <div className="text-lg font-bold text-blue-600 mb-0.5">
+                            {Math.round((totalSolved / totalQuestions) * 100)}
+                          </div>
+                          <div className="text-xs text-blue-700 dark:text-blue-400 font-medium">
+                            Complete
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Menu Items */}
+                    <div className="space-y-1">
+                      <Link
+                        to="/profile"
+                        className="flex items-center space-x-3 px-4 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-all duration-200 rounded-xl"
+                        onClick={() => setIsOpen(false)}
+                      >
+                        <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex-shrink-0">
+                          <FiUser className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                        </div>
+                        <div className="flex-1">
+                          <span className="font-medium block">Profile</span>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                            View your profile and stats
+                          </p>
+                        </div>
+                      </Link>
+                      {user.isAdmin && (
+                        <Link
+                          to="/admin"
+                          className="flex items-center space-x-3 px-4 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-all duration-200 rounded-xl"
+                          onClick={() => setIsOpen(false)}
+                        >
+                          <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex-shrink-0">
+                            <FiSettings className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                          </div>
+                          <div className="flex-1">
+                            <span className="font-medium block">
+                              Admin Panel
+                            </span>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                              Manage platform settings
+                            </p>
+                          </div>
+                        </Link>
+                      )}
+                      <button
+                        onClick={handleLogout}
+                        className="flex items-center space-x-3 w-full px-4 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-200 rounded-xl"
+                      >
+                        <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-lg flex-shrink-0">
+                          <FiLogOut className="w-4 h-4 text-red-600 dark:text-red-400" />
+                        </div>
+                        <div className="flex-1 text-left">
+                          <span className="font-medium block">Logout</span>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                            Sign out of your account
+                          </p>
+                        </div>
+                      </button>
+                    </div>
+                  </div>
+                )}
 
                 {/* Auth Links for Non-logged in Users */}
                 {!user && (

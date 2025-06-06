@@ -28,7 +28,7 @@
 
 .bar {
   width: 200px;
-  height: 12.5px;
+  height: 11.5px;
   background: black;
   border-radius: 30px;
   transform: rotate(-15deg);
@@ -47,12 +47,12 @@
 
 @keyframes ball-move8234 {
   from {
-    left: calc(100% - 40px);
+    left: calc(100% - 35px);
     transform: rotate(360deg);
   }
 
   to {
-    left: calc(0% - 20px);
+    left: calc(0% - 15px);
     transform: rotate(0deg);
   }
 }

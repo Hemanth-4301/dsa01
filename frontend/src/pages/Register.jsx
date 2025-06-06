@@ -87,7 +87,7 @@ const Register = () => {
     );
 
     if (result.success) {
-      navigate("/login");
+      navigate("/");
     }
 
     setLoading(false);
@@ -290,9 +290,9 @@ const Register = () => {
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? (
-                     <EyeOff className="w-4 h-4 sm:w-5 sm:h-5 " />
-                    ) : (
-                      <Eye className="w-4 h-4 sm:w-5 sm:h-5 " />
+                    <EyeOff className="w-4 h-4 sm:w-5 sm:h-5 " />
+                  ) : (
+                    <Eye className="w-4 h-4 sm:w-5 sm:h-5 " />
                   )}
                 </button>
                 <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-purple-500/0 via-indigo-500/0 to-blue-500/0 group-focus-within:from-purple-500/5 group-focus-within:via-indigo-500/5 group-focus-within:to-blue-500/5 transition-all duration-300 pointer-events-none"></div>

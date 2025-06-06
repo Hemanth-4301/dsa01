@@ -439,7 +439,7 @@ const Home = () => {
                   className="flex-shrink-0 relative w-full max-w-xs mx-auto lg:mx-0 mt-6 sm:mt-10 md:mt-12"
                   variants={itemVariants}
                 >
-                  <div className="relative  w-56 h-56 lg:w-64 lg:h-64 mx-auto animate-bounce mt-8">
+                  <div className="relative  w-52 h-52 lg:w-64 lg:h-64 mx-auto animate-bounce mt-8">
                     <div className="absolute inset-0 rounded-full bg-gradient-to-br from-blue-100 via-indigo-100 to-purple-100 dark:from-blue-900/30 dark:via-indigo-900/30 dark:to-purple-900/30 flex items-center justify-center p-6 sm:p-8 shadow-2xl border border-blue-200/50 dark:border-blue-700/50">
                       <div className="bar">
                         <div className="ball bg-gradient-to-r from-blue-500 to-indigo-500"></div>
@@ -493,11 +493,11 @@ const Home = () => {
                       </circle>
                     </svg>
                     <div className="absolute inset-0 flex items-center justify-center mt-16 sm:mt-20 md:mt-24">
-                      <div className="text-center">
-                        <span className="block text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
+                      <div className="text-center mt-6">
+                        <span className="block text-xl md:text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
                           {totalSolved}
                         </span>
-                        <span className="block text-xs sm:text-sm text-slate-600 dark:text-slate-400 font-medium">
+                        <span className="block text-xl text-slate-600 dark:text-slate-400 font-medium">
                           of {totalQuestions}
                         </span>
                       </div>
