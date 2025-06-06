@@ -14,7 +14,7 @@ import AdminRoute from "./components/AdminRoute";
 import LoadingSpinner from "./components/LoadingSpinner";
 import Footer from "./components/Footer";
 
-function MainContent() {
+function PublicRoutes() {
   const location = useLocation();
   const isQuestionDetail = location.pathname.startsWith("/questions/");
 
@@ -28,23 +28,7 @@ function MainContent() {
         <Route path="/register" element={<Register />} />
         <Route path="/questions" element={<Questions />} />
         <Route path="/questions/:id" element={<QuestionDetail />} />
-        <Route
-          path="/profile"
-          element={
-            <ProtectedRoute>
-              <Profile />
-            </ProtectedRoute>
-          }
-        />
         <Route path="/admin/login" element={<AdminLogin />} />
-        <Route
-          path="/admin/*"
-          element={
-            <AdminRoute>
-              <AdminDashboard />
-            </AdminRoute>
-          }
-        />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </main>
@@ -52,20 +36,48 @@ function MainContent() {
 }
 
 function App() {
-  const { user, loading } = useAuth();
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <LoadingSpinner />
-      </div>
-    );
-  }
+  const { loading } = useAuth();
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 ">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Navbar />
-      <MainContent />
+
+      <Routes>
+        {/* Public routes that load immediately */}
+        <Route path="/*" element={<PublicRoutes />} />
+
+        {/* Protected routes that show loading when checking auth */}
+        <Route
+          path="/profile"
+          element={
+            loading ? (
+              <div className="container mx-auto py-8 px-4 min-h-[60vh] flex items-center justify-center">
+                <LoadingSpinner />
+              </div>
+            ) : (
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            )
+          }
+        />
+
+        <Route
+          path="/admin/*"
+          element={
+            loading ? (
+              <div className="container mx-auto py-8 px-4 min-h-[60vh] flex items-center justify-center">
+                <LoadingSpinner />
+              </div>
+            ) : (
+              <AdminRoute>
+                <AdminDashboard />
+              </AdminRoute>
+            )
+          }
+        />
+      </Routes>
+
       <Footer />
     </div>
   );

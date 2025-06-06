@@ -54,7 +54,6 @@ axios.interceptors.response.use(
           return axios(originalRequest);
         }
       } catch (refreshError) {
-        // Refresh failed, logout user
         localStorage.removeItem("accessToken");
         localStorage.removeItem("refreshToken");
         window.location.href = "/login";
@@ -117,17 +116,49 @@ export const AuthProvider = ({ children }) => {
         password,
       });
 
+      const { userId } = response.data;
+
+      toast.success("Registration successful! Please verify your email.");
+      return { success: true, userId };
+    } catch (error) {
+      const message =
+        error.response?.data?.error?.message || "Registration failed";
+      toast.error(message);
+      return { success: false, error: message };
+    }
+  };
+
+  const verifyOTP = async (userId, otp) => {
+    try {
+      const response = await axios.post("/api/auth/verify-otp", {
+        userId,
+        otp,
+      });
+
       const { user, accessToken, refreshToken } = response.data;
 
       localStorage.setItem("accessToken", accessToken);
       localStorage.setItem("refreshToken", refreshToken);
       setUser(user);
 
-      toast.success("Registration successful!");
+      toast.success("Email verified successfully!");
       return { success: true };
     } catch (error) {
       const message =
-        error.response?.data?.error?.message || "Registration failed";
+        error.response?.data?.error?.message || "OTP verification failed";
+      toast.error(message);
+      return { success: false, error: message };
+    }
+  };
+
+  const resendOTP = async (userId) => {
+    try {
+      await axios.post("/api/auth/resend-otp", { userId });
+      toast.success("New OTP sent successfully!");
+      return { success: true };
+    } catch (error) {
+      const message =
+        error.response?.data?.error?.message || "Failed to resend OTP";
       toast.error(message);
       return { success: false, error: message };
     }
@@ -174,6 +205,8 @@ export const AuthProvider = ({ children }) => {
     loading,
     login,
     register,
+    verifyOTP,
+    resendOTP,
     adminLogin,
     logout,
   };

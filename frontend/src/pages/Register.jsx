@@ -22,12 +22,15 @@ const Register = () => {
     email: "",
     password: "",
     confirmPassword: "",
+    otp: "",
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
-  const { register } = useAuth();
+  const [step, setStep] = useState("register"); // register or verify
+  const [userId, setUserId] = useState(null);
+  const { register, verifyOTP, resendOTP } = useAuth();
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -35,7 +38,6 @@ const Register = () => {
       ...formData,
       [e.target.name]: e.target.value,
     });
-    // Clear error when user starts typing
     if (errors[e.target.name]) {
       setErrors({
         ...errors,
@@ -47,24 +49,32 @@ const Register = () => {
   const validateForm = () => {
     const newErrors = {};
 
-    if (!formData.name.trim()) {
-      newErrors.name = "Name is required";
-    }
+    if (step === "register") {
+      if (!formData.name.trim()) {
+        newErrors.name = "Name is required";
+      }
 
-    if (!formData.email.trim()) {
-      newErrors.email = "Email is required";
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = "Email is invalid";
-    }
+      if (!formData.email.trim()) {
+        newErrors.email = "Email is required";
+      } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+        newErrors.email = "Email is invalid";
+      }
 
-    if (!formData.password) {
-      newErrors.password = "Password is required";
-    } else if (formData.password.length < 6) {
-      newErrors.password = "Password must be at least 6 characters";
-    }
+      if (!formData.password) {
+        newErrors.password = "Password is required";
+      } else if (formData.password.length < 6) {
+        newErrors.password = "Password must be at least 6 characters";
+      }
 
-    if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = "Passwords do not match";
+      if (formData.password !== formData.confirmPassword) {
+        newErrors.confirmPassword = "Passwords do not match";
+      }
+    } else {
+      if (!formData.otp.trim()) {
+        newErrors.otp = "OTP is required";
+      } else if (formData.otp.length !== 6) {
+        newErrors.otp = "OTP must be 6 characters";
+      }
     }
 
     setErrors(newErrors);
@@ -80,16 +90,31 @@ const Register = () => {
 
     setLoading(true);
 
-    const result = await register(
-      formData.name,
-      formData.email,
-      formData.password
-    );
+    if (step === "register") {
+      const result = await register(
+        formData.name,
+        formData.email,
+        formData.password
+      );
 
-    if (result.success) {
-      navigate("/");
+      if (result.success) {
+        setUserId(result.userId);
+        setStep("verify");
+      }
+    } else {
+      const result = await verifyOTP(userId, formData.otp);
+
+      if (result.success) {
+        navigate("/");
+      }
     }
 
+    setLoading(false);
+  };
+
+  const handleResendOTP = async () => {
+    setLoading(true);
+    const result = await resendOTP(userId);
     setLoading(false);
   };
 
@@ -141,7 +166,7 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen  flex items-center justify-center relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
       <motion.div
         variants={containerVariants}
         initial="hidden"
@@ -149,7 +174,6 @@ const Register = () => {
         className="w-full max-w-sm sm:max-w-md relative z-10 px-2 sm:px-0 py-6 sm:py-12"
       >
         <div className="bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl rounded-2xl sm:rounded-3xl shadow-2xl border border-white/20 dark:border-slate-700/50 p-6 sm:p-8 relative overflow-hidden">
-          {/* Card decoration */}
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-500 via-indigo-500 to-blue-500"></div>
 
           <motion.div
@@ -170,10 +194,12 @@ const Register = () => {
               <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent rounded-xl sm:rounded-2xl"></div>
             </motion.div>
             <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-slate-900 via-purple-800 to-indigo-800 dark:from-white dark:via-purple-200 dark:to-indigo-200 bg-clip-text text-transparent mb-2 sm:mb-3">
-              Create Account
+              {step === "register" ? "Create Account" : "Verify Email"}
             </h1>
             <p className="text-slate-600 dark:text-slate-300 text-base sm:text-lg px-2">
-              signup and start your journey with us!
+              {step === "register"
+                ? "Signup and start your journey with us!"
+                : "Enter the OTP sent to your email"}
             </p>
           </motion.div>
 
@@ -182,229 +208,283 @@ const Register = () => {
             onSubmit={handleSubmit}
             className="space-y-4 sm:space-y-6"
           >
-            <motion.div variants={itemVariants}>
-              <label
-                htmlFor="name"
-                className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 sm:mb-3"
-              >
-                Full Name
-              </label>
-              <div className="relative group">
-                <User className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-slate-400 group-focus-within:text-purple-500 w-4 h-4 sm:w-5 sm:h-5 transition-colors duration-200" />
-                <input
-                  type="text"
-                  id="name"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  className={`w-full pl-10 sm:pl-12 pr-3 sm:pr-4 py-3 sm:py-4 bg-slate-50/50 dark:bg-slate-700/50 border rounded-xl text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500/50 transition-all duration-200 backdrop-blur-sm text-base ${
-                    errors.name
-                      ? "border-red-500/50"
-                      : "border-slate-200/50 dark:border-slate-600/50"
-                  }`}
-                  placeholder="Enter your full name"
-                  autoComplete="name"
-                  required
-                />
-                <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-purple-500/0 via-indigo-500/0 to-blue-500/0 group-focus-within:from-purple-500/5 group-focus-within:via-indigo-500/5 group-focus-within:to-blue-500/5 transition-all duration-300 pointer-events-none"></div>
-              </div>
-              {errors.name && (
-                <motion.p
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="mt-2 text-sm text-red-600 dark:text-red-400 flex items-center"
-                >
-                  <AlertCircle className="w-4 h-4 mr-1 flex-shrink-0" />
-                  {errors.name}
-                </motion.p>
-              )}
-            </motion.div>
-
-            <motion.div variants={itemVariants}>
-              <label
-                htmlFor="email"
-                className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 sm:mb-3"
-              >
-                Email Address
-              </label>
-              <div className="relative group">
-                <Mail className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-slate-400 group-focus-within:text-purple-500 w-4 h-4 sm:w-5 sm:h-5 transition-colors duration-200" />
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  className={`w-full pl-10 sm:pl-12 pr-3 sm:pr-4 py-3 sm:py-4 bg-slate-50/50 dark:bg-slate-700/50 border rounded-xl text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500/50 transition-all duration-200 backdrop-blur-sm text-base ${
-                    errors.email
-                      ? "border-red-500/50"
-                      : "border-slate-200/50 dark:border-slate-600/50"
-                  }`}
-                  placeholder="Enter your email address"
-                  autoComplete="email"
-                  inputMode="email"
-                  required
-                />
-                <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-purple-500/0 via-indigo-500/0 to-blue-500/0 group-focus-within:from-purple-500/5 group-focus-within:via-indigo-500/5 group-focus-within:to-blue-500/5 transition-all duration-300 pointer-events-none"></div>
-              </div>
-              {errors.email && (
-                <motion.p
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="mt-2 text-sm text-red-600 dark:text-red-400 flex items-center"
-                >
-                  <AlertCircle className="w-4 h-4 mr-1 flex-shrink-0" />
-                  {errors.email}
-                </motion.p>
-              )}
-            </motion.div>
-
-            <motion.div variants={itemVariants}>
-              <label
-                htmlFor="password"
-                className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 sm:mb-3"
-              >
-                Password
-              </label>
-              <div className="relative group">
-                <Lock className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-slate-400 group-focus-within:text-purple-500 w-4 h-4 sm:w-5 sm:h-5 transition-colors duration-200" />
-                <input
-                  type={showPassword ? "text" : "password"}
-                  id="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  className={`w-full pl-10 sm:pl-12 pr-12 sm:pr-14 py-3 sm:py-4 bg-slate-50/50 dark:bg-slate-700/50 border rounded-xl text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500/50 transition-all duration-200 backdrop-blur-sm text-base ${
-                    errors.password
-                      ? "border-red-500/50"
-                      : "border-slate-200/50 dark:border-slate-600/50"
-                  }`}
-                  placeholder="Create a strong password"
-                  autoComplete="new-password"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 sm:right-4 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors duration-200 p-2 -m-2 touch-manipulation"
-                  aria-label={showPassword ? "Hide password" : "Show password"}
-                >
-                  {showPassword ? (
-                    <EyeOff className="w-4 h-4 sm:w-5 sm:h-5 " />
-                  ) : (
-                    <Eye className="w-4 h-4 sm:w-5 sm:h-5 " />
-                  )}
-                </button>
-                <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-purple-500/0 via-indigo-500/0 to-blue-500/0 group-focus-within:from-purple-500/5 group-focus-within:via-indigo-500/5 group-focus-within:to-blue-500/5 transition-all duration-300 pointer-events-none"></div>
-              </div>
-
-              {/* Mobile-optimized Password Strength Indicator */}
-              {formData.password && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  className="mt-2 sm:mt-3"
-                >
-                  <div className="flex items-center justify-between mb-1 sm:mb-2">
-                    <span className="text-xs font-medium text-slate-600 dark:text-slate-400">
-                      Password Strength
-                    </span>
-                    <span
-                      className={`text-xs font-semibold ${
-                        passwordStrength.strength >= 3
-                          ? "text-green-600 dark:text-green-400"
-                          : passwordStrength.strength >= 2
-                          ? "text-blue-600 dark:text-blue-400"
-                          : "text-red-600 dark:text-red-400"
-                      }`}
-                    >
-                      {passwordStrength.label}
-                    </span>
-                  </div>
-                  <div className="flex space-x-1">
-                    {[1, 2, 3, 4].map((level) => (
-                      <div
-                        key={level}
-                        className={`h-1.5 sm:h-2 flex-1 rounded-full transition-all duration-300 ${
-                          level <= passwordStrength.strength
-                            ? passwordStrength.color
-                            : "bg-slate-200 dark:bg-slate-600"
-                        }`}
-                      />
-                    ))}
-                  </div>
-                </motion.div>
-              )}
-
-              {errors.password && (
-                <motion.p
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="mt-2 text-sm text-red-600 dark:text-red-400 flex items-center"
-                >
-                  <AlertCircle className="w-4 h-4 mr-1 flex-shrink-0" />
-                  {errors.password}
-                </motion.p>
-              )}
-            </motion.div>
-
-            <motion.div variants={itemVariants}>
-              <label
-                htmlFor="confirmPassword"
-                className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 sm:mb-3"
-              >
-                Confirm Password
-              </label>
-              <div className="relative group">
-                <Lock className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-slate-400 group-focus-within:text-purple-500 w-4 h-4 sm:w-5 sm:h-5 transition-colors duration-200" />
-                <input
-                  type={showConfirmPassword ? "text" : "password"}
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  className={`w-full pl-10 sm:pl-12 pr-12 sm:pr-16 py-3 sm:py-4 bg-slate-50/50 dark:bg-slate-700/50 border rounded-xl text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500/50 transition-all duration-200 backdrop-blur-sm text-base ${
-                    errors.confirmPassword
-                      ? "border-red-500/50"
-                      : "border-slate-200/50 dark:border-slate-600/50"
-                  }`}
-                  placeholder="Confirm your password"
-                  autoComplete="new-password"
-                  required
-                />
-                <div className="absolute right-3 sm:right-4 top-1/2 transform -translate-y-1/2 flex items-center space-x-1">
-                  {formData.confirmPassword &&
-                    formData.password === formData.confirmPassword && (
-                      <CheckCircle className="text-green-500 w-4 h-4 sm:w-5 sm:h-5" />
-                    )}
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="text-slate-400 flex  hover:text-slate-600 dark:hover:text-slate-300 transition-colors duration-200 p-2 -m-2 touch-manipulation"
-                    aria-label={
-                      showConfirmPassword ? "Hide password" : "Show password"
-                    }
+            {step === "register" ? (
+              <>
+                <motion.div variants={itemVariants}>
+                  <label
+                    htmlFor="name"
+                    className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 sm:mb-3"
                   >
-                    {showConfirmPassword ? (
-                      <EyeOff className="w-4 h-4 sm:w-5 sm:h-5 " />
-                    ) : (
-                      <Eye className="w-4 h-4 sm:w-5 sm:h-5 " />
-                    )}
-                  </button>
-                </div>
-                <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-purple-500/0 via-indigo-500/0 to-blue-500/0 group-focus-within:from-purple-500/5 group-focus-within:via-indigo-500/5 group-focus-within:to-blue-500/5 transition-all duration-300 pointer-events-none"></div>
-              </div>
-              {errors.confirmPassword && (
-                <motion.p
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="mt-2 text-sm text-red-600 dark:text-red-400 flex items-center"
+                    Full Name
+                  </label>
+                  <div className="relative group">
+                    <User className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-slate-400 group-focus-within:text-purple-500 w-4 h-4 sm:w-5 sm:h-5 transition-colors duration-200" />
+                    <input
+                      type="text"
+                      id="name"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleChange}
+                      className={`w-full pl-10 sm:pl-12 pr-3 sm:pr-4 py-3 sm:py-4 bg-slate-50/50 dark:bg-slate-700/50 border rounded-xl text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500/50 transition-all duration-200 backdrop-blur-sm text-base ${
+                        errors.name
+                          ? "border-red-500/50"
+                          : "border-slate-200/50 dark:border-slate-600/50"
+                      }`}
+                      placeholder="Enter your full name"
+                      autoComplete="name"
+                      required
+                    />
+                    <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-purple-500/0 via-indigo-500/0 to-blue-500/0 group-focus-within:from-purple-500/5 group-focus-within:via-indigo-500/5 group-focus-within:to-blue-500/5 transition-all duration-300 pointer-events-none"></div>
+                  </div>
+                  {errors.name && (
+                    <motion.p
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="mt-2 text-sm text-red-600 dark:text-red-400 flex items-center"
+                    >
+                      <AlertCircle className="w-4 h-4 mr-1 flex-shrink-0" />
+                      {errors.name}
+                    </motion.p>
+                  )}
+                </motion.div>
+
+                <motion.div variants={itemVariants}>
+                  <label
+                    htmlFor="email"
+                    className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 sm:mb-3"
+                  >
+                    Email Address
+                  </label>
+                  <div className="relative group">
+                    <Mail className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-slate-400 group-focus-within:text-purple-500 w-4 h-4 sm:w-5 sm:h-5 transition-colors duration-200" />
+                    <input
+                      type="email"
+                      id="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      className={`w-full pl-10 sm:pl-12 pr-3 sm:pr-4 py-3 sm:py-4 bg-slate-50/50 dark:bg-slate-700/50 border rounded-xl text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500/50 transition-all duration-200 backdrop-blur-sm text-base ${
+                        errors.email
+                          ? "border-red-500/50"
+                          : "border-slate-200/50 dark:border-slate-600/50"
+                      }`}
+                      placeholder="Enter your email address"
+                      autoComplete="email"
+                      inputMode="email"
+                      required
+                    />
+                    <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-purple-500/0 via-indigo-500/0 to-blue-500/0 group-focus-within:from-purple-500/5 group-focus-within:via-indigo-500/5 group-focus-within:to-blue-500/5 transition-all duration-300 pointer-events-none"></div>
+                  </div>
+                  {errors.email && (
+                    <motion.p
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="mt-2 text-sm text-red-600 dark:text-red-400 flex items-center"
+                    >
+                      <AlertCircle className="w-4 h-4 mr-1 flex-shrink-0" />
+                      {errors.email}
+                    </motion.p>
+                  )}
+                </motion.div>
+
+                <motion.div variants={itemVariants}>
+                  <label
+                    htmlFor="password"
+                    className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 sm:mb-3"
+                  >
+                    Password
+                  </label>
+                  <div className="relative group">
+                    <Lock className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-slate-400 group-focus-within:text-purple-500 w-4 h-4 sm:w-5 sm:h-5 transition-colors duration-200" />
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      id="password"
+                      name="password"
+                      value={formData.password}
+                      onChange={handleChange}
+                      className={`w-full pl-10 sm:pl-12 pr-12 sm:pr-14 py-3 sm:py-4 bg-slate-50/50 dark:bg-slate-700/50 border rounded-xl text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500/50 transition-all duration-200 backdrop-blur-sm text-base ${
+                        errors.password
+                          ? "border-red-500/50"
+                          : "border-slate-200/50 dark:border-slate-600/50"
+                      }`}
+                      placeholder="Create a strong password"
+                      autoComplete="new-password"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 sm:right-4 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors duration-200 p-2 -m-2 touch-manipulation"
+                      aria-label={
+                        showPassword ? "Hide password" : "Show password"
+                      }
+                    >
+                      {showPassword ? (
+                        <EyeOff className="w-4 h-4 sm:w-5 sm:h-5" />
+                      ) : (
+                        <Eye className="w-4 h-4 sm:w-5 sm:h-5" />
+                      )}
+                    </button>
+                    <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-purple-500/0 via-indigo-500/0 to-blue-500/0 group-focus-within:from-purple-500/5 group-focus-within:via-indigo-500/5 group-focus-within:to-blue-500/5 transition-all duration-300 pointer-events-none"></div>
+                  </div>
+
+                  {formData.password && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      className="mt-2 sm:mt-3"
+                    >
+                      <div className="flex items-center justify-between mb-1 sm:mb-2">
+                        <span className="text-xs font-medium text-slate-600 dark:text-slate-400">
+                          Password Strength
+                        </span>
+                        <span
+                          className={`text-xs font-semibold ${
+                            passwordStrength.strength >= 3
+                              ? "text-green-600 dark:text-green-400"
+                              : passwordStrength.strength >= 2
+                              ? "text-blue-600 dark:text-blue-400"
+                              : "text-red-600 dark:text-red-400"
+                          }`}
+                        >
+                          {passwordStrength.label}
+                        </span>
+                      </div>
+                      <div className="flex space-x-1">
+                        {[1, 2, 3, 4].map((level) => (
+                          <div
+                            key={level}
+                            className={`h-1.5 sm:h-2 flex-1 rounded-full transition-all duration-300 ${
+                              level <= passwordStrength.strength
+                                ? passwordStrength.color
+                                : "bg-slate-200 dark:bg-slate-600"
+                            }`}
+                          />
+                        ))}
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {errors.password && (
+                    <motion.p
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="mt-2 text-sm text-red-600 dark:text-red-400 flex items-center"
+                    >
+                      <AlertCircle className="w-4 h-4 mr-1 flex-shrink-0" />
+                      {errors.password}
+                    </motion.p>
+                  )}
+                </motion.div>
+
+                <motion.div variants={itemVariants}>
+                  <label
+                    htmlFor="confirmPassword"
+                    className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 sm:mb-3"
+                  >
+                    Confirm Password
+                  </label>
+                  <div className="relative group">
+                    <Lock className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-slate-400 group-focus-within:text-purple-500 w-4 h-4 sm:w-5 sm:h-5 transition-colors duration-200" />
+                    <input
+                      type={showConfirmPassword ? "text" : "password"}
+                      id="confirmPassword"
+                      name="confirmPassword"
+                      value={formData.confirmPassword}
+                      onChange={handleChange}
+                      className={`w-full pl-10 sm:pl-12 pr-12 sm:pr-16 py-3 sm:py-4 bg-slate-50/50 dark:bg-slate-700/50 border rounded-xl text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500/50 transition-all duration-200 backdrop-blur-sm text-base ${
+                        errors.confirmPassword
+                          ? "border-red-500/50"
+                          : "border-slate-200/50 dark:border-slate-600/50"
+                      }`}
+                      placeholder="Confirm your password"
+                      autoComplete="new-password"
+                      required
+                    />
+                    <div className="absolute right-3 sm:right-4 top-1/2 transform -translate-y-1/2 flex items-center space-x-1">
+                      {formData.confirmPassword &&
+                        formData.password === formData.confirmPassword && (
+                          <CheckCircle className="text-green-500 w-4 h-4 sm:w-5 sm:h-5" />
+                        )}
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setShowConfirmPassword(!showConfirmPassword)
+                        }
+                        className="text-slate-400 flex hover:text-slate-600 dark:hover:text-slate-300 transition-colors duration-200 p-2 -m-2 touch-manipulation"
+                        aria-label={
+                          showConfirmPassword
+                            ? "Hide password"
+                            : "Show password"
+                        }
+                      >
+                        {showConfirmPassword ? (
+                          <EyeOff className="w-4 h-4 sm:w-5 sm:h-5" />
+                        ) : (
+                          <Eye className="w-4 h-4 sm:w-5 sm:h-5" />
+                        )}
+                      </button>
+                    </div>
+                    <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-purple-500/0 via-indigo-500/0 to-blue-500/0 group-focus-within:from-purple-500/5 group-focus-within:via-indigo-500/5 group-focus-within:to-blue-500/5 transition-all duration-300 pointer-events-none"></div>
+                  </div>
+                  {errors.confirmPassword && (
+                    <motion.p
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="mt-2 text-sm text-red-600 dark:text-red-400 flex items-center"
+                    >
+                      <AlertCircle className="w-4 h-4 mr-1 flex-shrink-0" />
+                      {errors.confirmPassword}
+                    </motion.p>
+                  )}
+                </motion.div>
+              </>
+            ) : (
+              <motion.div variants={itemVariants}>
+                <label
+                  htmlFor="otp"
+                  className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 sm:mb-3"
                 >
-                  <AlertCircle className="w-4 h-4 mr-1 flex-shrink-0" />
-                  {errors.confirmPassword}
-                </motion.p>
-              )}
-            </motion.div>
+                  OTP Code
+                </label>
+                <div className="relative group">
+                  <Mail className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-slate-400 group-focus-within:text-purple-500 w-4 h-4 sm:w-5 sm:h-5 transition-colors duration-200" />
+                  <input
+                    type="text"
+                    id="otp"
+                    name="otp"
+                    value={formData.otp}
+                    onChange={handleChange}
+                    className={`w-full pl-10 sm:pl-12 pr-3 sm:pr-4 py-3 sm:py-4 bg-slate-50/50 dark:bg-slate-700/50 border rounded-xl text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500/50 transition-all duration-200 backdrop-blur-sm text-base ${
+                      errors.otp
+                        ? "border-red-500/50"
+                        : "border-slate-200/50 dark:border-slate-600/50"
+                    }`}
+                    placeholder="Enter 6-digit OTP"
+                    required
+                  />
+                  <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-purple-500/0 via-indigo-500/0 to-blue-500/0 group-focus-within:from-purple-500/5 group-focus-within:via-indigo-500/5 group-focus-within:to-blue-500/5 transition-all duration-300 pointer-events-none"></div>
+                </div>
+                {errors.otp && (
+                  <motion.p
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mt-2 text-sm text-red-600 dark:text-red-400 flex items-center"
+                  >
+                    <AlertCircle className="w-4 h-4 mr-1 flex-shrink-0" />
+                    {errors.otp}
+                  </motion.p>
+                )}
+                <motion.button
+                  type="button"
+                  onClick={handleResendOTP}
+                  disabled={loading}
+                  className="mt-4 text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 font-semibold transition-colors duration-200"
+                >
+                  Resend OTP
+                </motion.button>
+              </motion.div>
+            )}
 
             <motion.button
               variants={itemVariants}
@@ -418,7 +498,9 @@ const Register = () => {
                 <LoadingSpinner size="sm" />
               ) : (
                 <>
-                  <span>Create Account</span>
+                  <span>
+                    {step === "register" ? "Create Account" : "Verify OTP"}
+                  </span>
                   <motion.div
                     animate={{ x: [0, 4, 0] }}
                     transition={{

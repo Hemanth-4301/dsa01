@@ -23,7 +23,6 @@ const Login = () => {
       ...formData,
       [e.target.name]: e.target.value,
     });
-    // Clear error when user starts typing
     if (error) setError("");
   };
 
@@ -72,9 +71,7 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen  flex items-center justify-center relative overflow-hidden">
-      {/* Mobile-optimized background decorations */}
-
+    <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
       <motion.div
         variants={containerVariants}
         initial="hidden"
@@ -82,7 +79,6 @@ const Login = () => {
         className="w-full max-w-sm sm:max-w-md relative z-10 px-2 sm:px-0 py-6 sm:py-12"
       >
         <div className="bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl rounded-2xl sm:rounded-3xl shadow-2xl border border-white/20 dark:border-slate-700/50 p-6 sm:p-8 relative overflow-hidden">
-          {/* Card decoration */}
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-indigo-500"></div>
 
           <motion.div
