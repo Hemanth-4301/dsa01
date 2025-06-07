@@ -518,130 +518,6 @@ const Home = () => {
               <LoadingSpinner />
             ) : (
               <div className="space-y-6 sm:space-y-8">
-                {/* Enhanced Progress Overview Pie Chart */}
-                <div className="bg-gradient-to-br from-white/80 to-slate-50/80 dark:from-slate-800/80 dark:to-slate-900/80 backdrop-blur-sm rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-slate-200/60 dark:border-slate-700/60 shadow-lg">
-                  <h3 className="text-base sm:text-lg font-semibold bg-gradient-to-r from-slate-900 to-slate-700 dark:from-slate-100 dark:to-slate-300 bg-clip-text text-transparent mb-4 sm:mb-6 text-center">
-                    🎯 Progress Overview
-                  </h3>
-                  <div className="flex flex-col xl:flex-row items-center justify-center gap-6 sm:gap-8">
-                    {/* Enhanced Pie Chart */}
-                    <div className="w-full max-w-sm sm:max-w-md">
-                      <div className="h-64 sm:h-80 lg:h-96">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <PieChart>
-                            <defs>
-                              {progressPieData.map((entry, index) => (
-                                <linearGradient
-                                  key={`gradient-${index}`}
-                                  id={`pieGradient-${index}`}
-                                  x1="0"
-                                  y1="0"
-                                  x2="0"
-                                  y2="1"
-                                >
-                                  <stop
-                                    offset="0%"
-                                    stopColor={entry.gradient[0]}
-                                    stopOpacity={1}
-                                  />
-                                  <stop
-                                    offset="100%"
-                                    stopColor={entry.gradient[1]}
-                                    stopOpacity={0.8}
-                                  />
-                                </linearGradient>
-                              ))}
-                            </defs>
-                            <Pie
-                              activeIndex={activePieIndex}
-                              activeShape={renderActiveShape}
-                              data={progressPieData}
-                              cx="50%"
-                              cy="50%"
-                              innerRadius="45%"
-                              outerRadius="75%"
-                              paddingAngle={3}
-                              dataKey="value"
-                              onMouseEnter={(_, index) =>
-                                setActivePieIndex(index)
-                              }
-                              animationBegin={200}
-                              animationDuration={1500}
-                              animationEasing="ease-out"
-                            >
-                              {progressPieData.map((entry, index) => (
-                                <Cell
-                                  key={`cell-${index}`}
-                                  fill={`url(#pieGradient-${index})`}
-                                  stroke={entry.color}
-                                  strokeWidth={2}
-                                  className="drop-shadow-lg hover:drop-shadow-xl transition-all duration-300 cursor-pointer"
-                                />
-                              ))}
-                              {progressPieData.length === 0 && (
-                                <Cell fill="#e2e8f0" />
-                              )}
-                            </Pie>
-                            <Tooltip content={<CustomPieTooltip />} />
-                          </PieChart>
-                        </ResponsiveContainer>
-                      </div>
-                    </div>
-
-                    {/* Enhanced Legend */}
-                    <div className="w-full max-w-sm space-y-3 sm:space-y-4">
-                      {progressPieData.map((entry, index) => (
-                        <motion.div
-                          key={index}
-                          initial={{ opacity: 0, x: 20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{
-                            delay: index * 0.1 + 0.3,
-                            duration: 0.5,
-                          }}
-                          className={`flex items-center space-x-3 sm:space-x-4 p-3 sm:p-4 rounded-xl sm:rounded-2xl transition-all duration-300 cursor-pointer ${
-                            index === activePieIndex
-                              ? "bg-slate-100 dark:bg-slate-700 shadow-md scale-105"
-                              : "bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-700"
-                          }`}
-                          onMouseEnter={() => setActivePieIndex(index)}
-                          whileHover={{ scale: 1.02 }}
-                        >
-                          <div className="flex items-center space-x-2 sm:space-x-3">
-                            <span className="text-lg sm:text-xl">
-                              {entry.icon}
-                            </span>
-                            <div
-                              className="w-3 h-3 sm:w-4 sm:h-4 rounded-full shadow-sm"
-                              style={{
-                                background: `linear-gradient(135deg, ${entry.gradient[0]}, ${entry.gradient[1]})`,
-                              }}
-                            ></div>
-                          </div>
-                          <div className="flex-1">
-                            <div className="text-sm sm:text-base font-semibold text-slate-700 dark:text-slate-300">
-                              {entry.name}
-                            </div>
-                            <div className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-                              {entry.value} problems (
-                              {((entry.value / totalQuestions) * 100).toFixed(
-                                1
-                              )}
-                              %)
-                            </div>
-                          </div>
-                          <div
-                            className="text-lg sm:text-xl font-bold"
-                            style={{ color: entry.color }}
-                          >
-                            {entry.value}
-                          </div>
-                        </motion.div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
                 {/* Enhanced Category Distribution Bar Chart */}
                 <div className="bg-gradient-to-br from-white/80 to-slate-50/80 dark:from-slate-800/80 dark:to-slate-900/80 backdrop-blur-sm rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-slate-200/60 dark:border-slate-700/60 shadow-lg">
                   <h3 className="text-base sm:text-lg font-semibold bg-gradient-to-r from-slate-900 to-slate-700 dark:from-slate-100 dark:to-slate-300 bg-clip-text text-transparent mb-4 sm:mb-6 text-center">
@@ -777,6 +653,129 @@ const Home = () => {
                         )}
                       </BarChart>
                     </ResponsiveContainer>
+                  </div>
+                </div>
+                {/* Enhanced Progress Overview Pie Chart */}
+                <div className="bg-gradient-to-br from-white/80 to-slate-50/80 dark:from-slate-800/80 dark:to-slate-900/80 backdrop-blur-sm rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-slate-200/60 dark:border-slate-700/60 shadow-lg">
+                  <h3 className="text-base sm:text-lg font-semibold bg-gradient-to-r from-slate-900 to-slate-700 dark:from-slate-100 dark:to-slate-300 bg-clip-text text-transparent mb-4 sm:mb-6 text-center">
+                    🎯 Progress Overview
+                  </h3>
+                  <div className="flex flex-col xl:flex-row items-center justify-center gap-6 sm:gap-8">
+                    {/* Enhanced Pie Chart */}
+                    <div className="w-full max-w-sm sm:max-w-md">
+                      <div className="h-64 sm:h-80 lg:h-96">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <PieChart>
+                            <defs>
+                              {progressPieData.map((entry, index) => (
+                                <linearGradient
+                                  key={`gradient-${index}`}
+                                  id={`pieGradient-${index}`}
+                                  x1="0"
+                                  y1="0"
+                                  x2="0"
+                                  y2="1"
+                                >
+                                  <stop
+                                    offset="0%"
+                                    stopColor={entry.gradient[0]}
+                                    stopOpacity={1}
+                                  />
+                                  <stop
+                                    offset="100%"
+                                    stopColor={entry.gradient[1]}
+                                    stopOpacity={0.8}
+                                  />
+                                </linearGradient>
+                              ))}
+                            </defs>
+                            <Pie
+                              activeIndex={activePieIndex}
+                              activeShape={renderActiveShape}
+                              data={progressPieData}
+                              cx="50%"
+                              cy="50%"
+                              innerRadius="45%"
+                              outerRadius="75%"
+                              paddingAngle={3}
+                              dataKey="value"
+                              onMouseEnter={(_, index) =>
+                                setActivePieIndex(index)
+                              }
+                              animationBegin={200}
+                              animationDuration={1500}
+                              animationEasing="ease-out"
+                            >
+                              {progressPieData.map((entry, index) => (
+                                <Cell
+                                  key={`cell-${index}`}
+                                  fill={`url(#pieGradient-${index})`}
+                                  stroke={entry.color}
+                                  strokeWidth={2}
+                                  className="drop-shadow-lg hover:drop-shadow-xl transition-all duration-300 cursor-pointer"
+                                />
+                              ))}
+                              {progressPieData.length === 0 && (
+                                <Cell fill="#e2e8f0" />
+                              )}
+                            </Pie>
+                            <Tooltip content={<CustomPieTooltip />} />
+                          </PieChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+
+                    {/* Enhanced Legend */}
+                    <div className="w-full max-w-sm space-y-3 sm:space-y-4">
+                      {progressPieData.map((entry, index) => (
+                        <motion.div
+                          key={index}
+                          initial={{ opacity: 0, x: 20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{
+                            delay: index * 0.1 + 0.3,
+                            duration: 0.5,
+                          }}
+                          className={`flex items-center space-x-3 sm:space-x-4 p-3 sm:p-4 rounded-xl sm:rounded-2xl transition-all duration-300 cursor-pointer ${
+                            index === activePieIndex
+                              ? "bg-slate-100 dark:bg-slate-700 shadow-md scale-105"
+                              : "bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-700"
+                          }`}
+                          onMouseEnter={() => setActivePieIndex(index)}
+                          whileHover={{ scale: 1.02 }}
+                        >
+                          <div className="flex items-center space-x-2 sm:space-x-3">
+                            <span className="text-lg sm:text-xl">
+                              {entry.icon}
+                            </span>
+                            <div
+                              className="w-3 h-3 sm:w-4 sm:h-4 rounded-full shadow-sm"
+                              style={{
+                                background: `linear-gradient(135deg, ${entry.gradient[0]}, ${entry.gradient[1]})`,
+                              }}
+                            ></div>
+                          </div>
+                          <div className="flex-1">
+                            <div className="text-sm sm:text-base font-semibold text-slate-700 dark:text-slate-300">
+                              {entry.name}
+                            </div>
+                            <div className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+                              {entry.value} problems (
+                              {((entry.value / totalQuestions) * 100).toFixed(
+                                1
+                              )}
+                              %)
+                            </div>
+                          </div>
+                          <div
+                            className="text-lg sm:text-xl font-bold"
+                            style={{ color: entry.color }}
+                          >
+                            {entry.value}
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>

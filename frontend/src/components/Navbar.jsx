@@ -213,7 +213,7 @@ const Navbar = () => {
               {user.isAdmin && (
                 <Link
                   to="/chatbot"
-                  className="text-slate-200 flex justify-center items-center p-2 px-3 py-1 gap-2 rounded-xl dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-slate-800/50"
+                  className="text-slate-200 flex justify-center items-center p-4 py-[6px] gap-2 rounded-xl dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-slate-800/50"
                   onClick={() => setShowUserMenu(false)}
                 >
                   <FiSettings className="w-4 h-4 text-purple-400" />
@@ -247,7 +247,7 @@ const Navbar = () => {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => setShowUserMenu(!showUserMenu)}
-                  className="flex items-center space-x-3 p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200 border border-transparent hover:border-slate-200 dark:hover:border-slate-700 shadow-sm hover:shadow-md group"
+                  className="flex items-center space-x-3 p-2 rounded-xl hover:bg-slate-800 transition-all duration-200 border border-transparent hover:border-slate-200 dark:hover:border-slate-700 shadow-sm hover:shadow-md group"
                 >
                   <div className="relative">
                     <img
@@ -260,7 +260,7 @@ const Navbar = () => {
                     </div>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 max-w-24 truncate">
+                    <span className="text-sm font-semibold text-slate-200 dark:text-slate-300 max-w-24 truncate">
                       {getDisplayName()}
                     </span>
                     <FiChevronDown

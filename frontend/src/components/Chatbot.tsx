@@ -383,9 +383,6 @@ const Chatbot: React.FC = () => {
             <h2 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-violet-700 to-purple-700 dark:from-violet-300 dark:to-purple-300 bg-clip-text text-transparent">
               AI Assistant
             </h2>
-            <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300">
-              Powered by Gemini
-            </p>
           </div>
         </div>
         <button
@@ -399,7 +396,7 @@ const Chatbot: React.FC = () => {
       </div>
 
       {/* Chat area */}
-      <div className="relative z-10 flex-1 overflow-y-auto p-2 sm:p-4 space-y-3 sm:space-y-4 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
+      <div className="relative z-10 flex-1 overflow-y-auto p-1 sm:p-4 space-y-3 sm:space-y-4 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
         {messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-gray-700 dark:text-gray-200 p-4 sm:p-6">
             <div className="w-16 h-16 sm:w-20 sm:h-20 mb-4 sm:mb-6 flex items-center justify-center bg-gradient-to-br from-violet-400/30 to-purple-500/30 rounded-2xl sm:rounded-3xl shadow-xl backdrop-blur-sm border border-white/30">
@@ -415,8 +412,6 @@ const Chatbot: React.FC = () => {
             <div className="grid grid-cols-1 gap-2 sm:gap-3 w-full max-w-lg px-2">
               {[
                 "What's the optimal solution for the 3Sum problem in Java?",
-                "Explain React hooks with examples",
-                "Python best practices for clean code",
                 "How to optimize SQL queries?",
               ].map((prompt, i) => (
                 <div
