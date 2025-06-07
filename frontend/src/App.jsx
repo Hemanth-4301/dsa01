@@ -14,6 +14,7 @@ import AdminRoute from "./components/AdminRoute";
 import LoadingSpinner from "./components/LoadingSpinner";
 import Footer from "./components/Footer";
 import About from "./components/About";
+import Chatbot from "./components/Chatbot";
 
 function PublicRoutes() {
   const location = useLocation();
@@ -30,6 +31,7 @@ function PublicRoutes() {
         <Route path="/questions" element={<Questions />} />
         <Route path="/questions/:id" element={<QuestionDetail />} />
         <Route path="/admin/login" element={<AdminLogin />} />
+        <Route path="/chatbot" element={<Chatbot />} />
         <Route path="/about" element={<About />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>

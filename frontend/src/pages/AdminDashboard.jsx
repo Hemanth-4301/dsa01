@@ -20,14 +20,14 @@ const AdminDashboard = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+      <div className="flex items-center justify-center pt-6">
+        <h1 className="text-3xl font-bold  text-gray-900 dark:text-white">
           Admin Dashboard
         </h1>
       </div>
 
       {/* Navigation */}
-      <div className="flex space-x-1 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg">
+      <div className="flex space-x-1 bg-gray-100 dark:bg-gray-800 p-1 mx-2 md:mx-6 rounded-lg">
         {navigation.map((item) => (
           <Link
             key={item.name}

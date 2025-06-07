@@ -8,13 +8,14 @@ import {
   FiStar,
   FiTrendingUp,
   FiChevronRight,
+  FiCheck,
+  FiTarget,
+  FiZap,
 } from "react-icons/fi";
 import { useQuery } from "react-query";
 import axios from "axios";
 import { useAuth } from "../contexts/AuthContext";
 import LoadingSpinner from "../components/LoadingSpinner";
-import CalendarHeatmap from "react-calendar-heatmap";
-import "react-calendar-heatmap/dist/styles.css";
 import {
   BarChart,
   Bar,
@@ -58,24 +59,70 @@ const Profile = () => {
     }
   );
 
-  // Generate heatmap data (mock data for now)
-  const generateHeatmapData = () => {
+  // Generate daily progress data (mock data for now)
+  const generateDailyProgress = () => {
     const data = [];
-    const startDate = new Date();
-    startDate.setFullYear(startDate.getFullYear() - 1);
+    const today = new Date();
 
-    for (let i = 0; i < 365; i++) {
-      const date = new Date(startDate);
-      date.setDate(date.getDate() + i);
+    // Generate last 30 days
+    for (let i = 29; i >= 0; i--) {
+      const date = new Date(today);
+      date.setDate(date.getDate() - i);
+
+      const dayOfWeek = date.getDay();
+      const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+
+      // Higher probability of solving on weekdays
+      const solveChance = isWeekend ? 0.4 : 0.7;
+      const solved = Math.random() < solveChance;
+      const problemCount = solved ? Math.floor(Math.random() * 5) + 1 : 0;
+
       data.push({
         date: date.toISOString().split("T")[0],
-        count: Math.floor(Math.random() * 5), // Random activity for demo
+        day: date.getDate(),
+        dayName: date.toLocaleDateString("en", { weekday: "short" }),
+        month: date.toLocaleDateString("en", { month: "short" }),
+        solved,
+        problemCount,
+        isToday: i === 0,
+        isWeekend,
       });
     }
     return data;
   };
 
-  const heatmapData = generateHeatmapData();
+  const dailyProgress = generateDailyProgress();
+  const currentStreak = calculateCurrentStreak(dailyProgress);
+  const longestStreak = calculateLongestStreak(dailyProgress);
+  const solvedDays = dailyProgress.filter((day) => day.solved).length;
+
+  function calculateCurrentStreak(data) {
+    let streak = 0;
+    for (let i = data.length - 1; i >= 0; i--) {
+      if (data[i].solved) {
+        streak++;
+      } else {
+        break;
+      }
+    }
+    return streak;
+  }
+
+  function calculateLongestStreak(data) {
+    let maxStreak = 0;
+    let currentStreak = 0;
+
+    data.forEach((day) => {
+      if (day.solved) {
+        currentStreak++;
+        maxStreak = Math.max(maxStreak, currentStreak);
+      } else {
+        currentStreak = 0;
+      }
+    });
+
+    return maxStreak;
+  }
 
   const tabs = [
     { id: "overview", label: "Overview", icon: FiTrendingUp },
@@ -304,35 +351,141 @@ const Profile = () => {
       >
         {activeTab === "overview" && (
           <div className="space-y-4 sm:space-y-6">
-            {/* Enhanced Activity Heatmap */}
+            {/* New Daily Progress Tracker */}
             <div className="bg-gradient-to-br from-white/80 to-slate-50/80 dark:from-slate-800/80 dark:to-slate-900/80 backdrop-blur-sm rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-lg border border-slate-200/60 dark:border-slate-700/60">
               <h2 className="text-lg sm:text-xl font-semibold bg-gradient-to-r from-slate-900 to-slate-700 dark:from-slate-100 dark:to-slate-300 bg-clip-text text-transparent mb-4 sm:mb-6 text-center">
-                📅 Activity Heatmap
+                🔥 Daily Progress Tracker
               </h2>
-              <div className="overflow-x-auto -mx-2 sm:-mx-4">
-                <div className="min-w-[600px] px-2 sm:px-4">
-                  <CalendarHeatmap
-                    startDate={
-                      new Date(
-                        new Date().setFullYear(new Date().getFullYear() - 1)
-                      )
-                    }
-                    endDate={new Date()}
-                    values={heatmapData}
-                    classForValue={(value) => {
-                      if (!value) {
-                        return "color-empty";
-                      }
-                      return `color-scale-${Math.min(value.count, 4)}`;
-                    }}
-                    tooltipDataAttrs={(value) => {
-                      return {
-                        "data-tip": `${value.date}: ${
-                          value.count || 0
-                        } problems solved`,
-                      };
-                    }}
-                  />
+
+              {/* Streak Stats */}
+              <div className="grid grid-cols-3 gap-3 sm:gap-4 mb-6">
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  className="bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 rounded-xl p-3 sm:p-4 text-center border border-orange-200/50 dark:border-orange-700/50"
+                >
+                  <div className="flex items-center justify-center mb-2">
+                    <FiZap className="w-5 h-5 text-orange-500 mr-1" />
+                    <span className="text-lg sm:text-2xl font-bold text-orange-600 dark:text-orange-400">
+                      {currentStreak}
+                    </span>
+                  </div>
+                  <div className="text-xs sm:text-sm text-orange-700 dark:text-orange-300 font-medium">
+                    Current Streak
+                  </div>
+                </motion.div>
+
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  className="bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 rounded-xl p-3 sm:p-4 text-center border border-purple-200/50 dark:border-purple-700/50"
+                >
+                  <div className="flex items-center justify-center mb-2">
+                    <FiTarget className="w-5 h-5 text-purple-500 mr-1" />
+                    <span className="text-lg sm:text-2xl font-bold text-purple-600 dark:text-purple-400">
+                      {longestStreak}
+                    </span>
+                  </div>
+                  <div className="text-xs sm:text-sm text-purple-700 dark:text-purple-300 font-medium">
+                    Best Streak
+                  </div>
+                </motion.div>
+
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  className="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 rounded-xl p-3 sm:p-4 text-center border border-emerald-200/50 dark:border-emerald-700/50"
+                >
+                  <div className="flex items-center justify-center mb-2">
+                    <FiCheck className="w-5 h-5 text-emerald-500 mr-1" />
+                    <span className="text-lg sm:text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+                      {solvedDays}
+                    </span>
+                  </div>
+                  <div className="text-xs sm:text-sm text-emerald-700 dark:text-emerald-300 font-medium">
+                    Active Days
+                  </div>
+                </motion.div>
+              </div>
+
+              {/* Daily Progress Grid */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between text-sm text-slate-600 dark:text-slate-400">
+                  <span>Last 30 Days</span>
+                  <div className="flex items-center space-x-4">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-3 h-3 bg-emerald-500 rounded-full"></div>
+                      <span className="text-xs">Solved</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <div className="w-3 h-3 bg-slate-300 dark:bg-slate-600 rounded-full"></div>
+                      <span className="text-xs">Not Solved</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Responsive Grid */}
+                <div className="grid grid-cols-7 sm:grid-cols-10 lg:grid-cols-15 gap-1 sm:gap-2">
+                  {dailyProgress.map((day, index) => (
+                    <motion.div
+                      key={day.date}
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: index * 0.02 }}
+                      whileHover={{ scale: 1.1, y: -2 }}
+                      className={`
+                        relative aspect-square rounded-lg sm:rounded-xl p-1 sm:p-2 text-center cursor-pointer
+                        transition-all duration-200 group
+                        ${
+                          day.solved
+                            ? "bg-gradient-to-br from-emerald-400 to-emerald-600 text-white shadow-lg"
+                            : "bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 text-slate-600 dark:text-slate-400"
+                        }
+                        ${
+                          day.isToday
+                            ? "ring-2 ring-blue-500 ring-offset-2 dark:ring-offset-slate-900"
+                            : ""
+                        }
+                        ${day.isWeekend ? "opacity-75" : ""}
+                      `}
+                      title={`${day.date}: ${
+                        day.solved
+                          ? `${day.problemCount} problems solved`
+                          : "No problems solved"
+                      }`}
+                    >
+                      <div className="flex flex-col items-center justify-center h-full">
+                        <div className="text-xs sm:text-sm font-bold">
+                          {day.day}
+                        </div>
+                        {day.solved && (
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <FiCheck className="w-3 h-3 sm:w-4 sm:h-4 text-white opacity-80" />
+                          </div>
+                        )}
+                        {day.isToday && (
+                          <div className="absolute -top-1 -right-1 w-2 h-2 bg-blue-500 rounded-full"></div>
+                        )}
+                      </div>
+
+                      {/* Hover tooltip */}
+                      <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                        <div className="font-medium">{day.date}</div>
+                        <div>
+                          {day.solved
+                            ? `${day.problemCount} solved`
+                            : "Not solved"}
+                        </div>
+                        <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-slate-900 dark:border-t-slate-100"></div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+
+                {/* Month labels for larger screens */}
+                <div className="hidden sm:flex justify-between text-xs text-slate-500 dark:text-slate-400 mt-2">
+                  {Array.from(
+                    new Set(dailyProgress.map((day) => day.month))
+                  ).map((month) => (
+                    <span key={month}>{month}</span>
+                  ))}
                 </div>
               </div>
             </div>

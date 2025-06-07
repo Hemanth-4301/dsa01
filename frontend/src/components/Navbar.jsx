@@ -161,7 +161,7 @@ const Navbar = () => {
   }
 
   return (
-    <nav className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-lg border-b border-slate-200/50 dark:border-slate-700/50 sticky top-0 z-50 shadow-lg">
+    <nav className="bg-slate-900 dark:bg-slate-900/95 backdrop-blur-lg border-b border-slate-200/50 dark:border-slate-700/50 sticky top-0 z-50 shadow-lg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Enhanced Logo */}
@@ -190,7 +190,7 @@ const Navbar = () => {
                   className={`relative px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 group ${
                     isActive(link.path)
                       ? "text-blue-600 dark:text-blue-400 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 shadow-sm"
-                      : "text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-slate-800/50"
+                      : "text-slate-200 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-slate-800/50"
                   }`}
                 >
                   <span className="flex items-center space-x-2">
@@ -210,6 +210,18 @@ const Navbar = () => {
                   )}
                 </Link>
               ))}
+              {user.isAdmin && (
+                <Link
+                  to="/chatbot"
+                  className="text-slate-200 flex justify-center items-center p-2 px-3 py-1 gap-2 rounded-xl dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-slate-800/50"
+                  onClick={() => setShowUserMenu(false)}
+                >
+                  <FiSettings className="w-4 h-4 text-purple-400" />
+                  <div className="flex-1">
+                    <span className="font-semibold block">Chatbot</span>
+                  </div>
+                </Link>
+              )}
             </div>
           </div>
 
@@ -369,6 +381,7 @@ const Navbar = () => {
                             </div>
                           </Link>
                         )}
+
                         <button
                           onClick={handleLogout}
                           className="flex items-center space-x-4 w-full px-6 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-200 group"
@@ -392,7 +405,7 @@ const Navbar = () => {
               <div className="flex items-center space-x-3">
                 <Link
                   to="/login"
-                  className="text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 font-semibold text-sm px-4 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all duration-200"
+                  className="text-slate-200 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 font-semibold text-sm px-4 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all duration-200"
                 >
                   Login
                 </Link>
@@ -451,7 +464,7 @@ const Navbar = () => {
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.3, ease: "easeInOut" }}
-              className="md:hidden border-t border-slate-200/50 dark:border-slate-700/50 bg-white/95 dark:bg-slate-900/95 backdrop-blur-lg relative z-50"
+              className="md:hidden border-t   border-slate-200/50 dark:border-slate-700/50 bg-slate-900 dark:bg-slate-900/95 backdrop-blur-lg relative z-50"
             >
               <div className="px-4 py-6 space-y-4">
                 {/* Navigation Links */}
@@ -463,7 +476,7 @@ const Navbar = () => {
                       className={`flex items-center space-x-3 px-4 py-3 rounded-xl text-base font-medium transition-all duration-200 ${
                         isActive(link.path)
                           ? "text-blue-600 dark:text-blue-400 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 border border-blue-200/50 dark:border-blue-700/50 shadow-sm"
-                          : "text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-slate-800/50"
+                          : "text-slate-200 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-slate-800/50"
                       }`}
                       onClick={() => setIsOpen(false)}
                     >
@@ -471,6 +484,18 @@ const Navbar = () => {
                       <span>{link.label}</span>
                     </Link>
                   ))}
+                  {user.isAdmin && (
+                    <Link
+                      to="/chatbot"
+                      className="text-slate-200 flex justify-center ms-1  items-center space-x-3 px-4 py-3 rounded-xl text-base font-medium transition-all duration-200 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-slate-800/50"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      <FiSettings className="w-4 h-4 text-purple-400" />
+                      <div className="flex-1">
+                        <span className="font-semibold block">Chatbot</span>
+                      </div>
+                    </Link>
+                  )}
                 </div>
 
                 {/* User Profile Section for Mobile */}
@@ -595,7 +620,7 @@ const Navbar = () => {
                   <div className="pt-4 border-t border-slate-200/50 dark:border-slate-700/50 space-y-3">
                     <Link
                       to="/login"
-                      className="block px-4 py-3 rounded-xl text-base font-medium text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all duration-200"
+                      className="block px-4 py-3 rounded-xl text-base font-medium text-slate-200 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all duration-200"
                       onClick={() => setIsOpen(false)}
                     >
                       Login
