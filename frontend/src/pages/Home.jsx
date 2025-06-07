@@ -2,9 +2,17 @@
 
 import "../pages/App.css";
 import { Link } from "react-router-dom";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { FiChevronRight } from "react-icons/fi";
+import {
+  FiChevronRight,
+  FiPlay,
+  FiPause,
+  FiCode,
+  FiTarget,
+  FiCpu,
+  FiDatabase,
+} from "react-icons/fi";
 import { useAuth } from "../contexts/AuthContext";
 import { useQuery } from "react-query";
 import axios from "axios";
@@ -25,6 +33,518 @@ import {
   Sector,
 } from "recharts";
 
+// Enhanced code examples with better structure
+const codeExamples = [
+  {
+    title: "Two Sum Problem",
+    language: "Python",
+    difficulty: "Easy",
+    timeComplexity: "O(n)",
+    spaceComplexity: "O(n)",
+    category: "Hash Table",
+    code: `def two_sum(nums, target):
+    """
+    Find two numbers that add up to target
+    Time: O(n), Space: O(n)
+    """
+    seen = {}
+    
+    for i, num in enumerate(nums):
+        complement = target - num
+        
+        if complement in seen:
+            return [seen[complement], i]
+        
+        seen[num] = i
+    
+    return []
+
+# Example usage
+nums = [2, 7, 11, 15]
+target = 9
+result = two_sum(nums, target)
+print(f"Indices: {result}")  # Output: [0, 1]`,
+  },
+  {
+    title: "Generate Parentheses",
+    language: "Python",
+    difficulty: "Medium",
+    timeComplexity: "O(4^n / √n)",
+    spaceComplexity: "O(4^n / √n)",
+    category: "Backtracking",
+    code: `def generate_parentheses(n):
+    """
+    Generate all valid parentheses combinations
+    Time: O(4^n / sqrt(n)), Space: O(4^n / sqrt(n))
+    """
+    result = []
+    
+    def backtrack(current, open_count, close_count):
+        # Base case: valid combination found
+        if len(current) == 2 * n:
+            result.append(current)
+            return
+        
+        # Add opening parenthesis
+        if open_count < n:
+            backtrack(current + "(", open_count + 1, close_count)
+        
+        # Add closing parenthesis
+        if close_count < open_count:
+            backtrack(current + ")", open_count, close_count + 1)
+    
+    backtrack("", 0, 0)
+    return result
+
+# Example usage
+n = 3
+combinations = generate_parentheses(n)
+print(combinations)`,
+  },
+  {
+    title: "Binary Tree Inorder",
+    language: "Python",
+    difficulty: "Easy",
+    timeComplexity: "O(n)",
+    spaceComplexity: "O(h)",
+    category: "Tree Traversal",
+    code: `class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+def inorder_traversal(root):
+    """
+    Inorder traversal: Left -> Root -> Right
+    Time: O(n), Space: O(h) where h is height
+    """
+    result = []
+    
+    def inorder(node):
+        if not node:
+            return
+        
+        inorder(node.left)   # Visit left subtree
+        result.append(node.val)  # Visit root
+        inorder(node.right)  # Visit right subtree
+    
+    inorder(root)
+    return result
+
+# Example usage
+root = TreeNode(1, None, TreeNode(2, TreeNode(3), None))
+print(inorder_traversal(root))  # Output: [1, 3, 2]`,
+  },
+];
+
+// Syntax highlighting function
+const highlightSyntax = (code) => {
+  const tokens = [];
+  const lines = code.split("\n");
+
+  lines.forEach((line, lineIndex) => {
+    const lineTokens = [];
+    let currentIndex = 0;
+
+    // Keywords
+    const keywords = [
+      "def",
+      "class",
+      "if",
+      "else",
+      "elif",
+      "for",
+      "while",
+      "return",
+      "in",
+      "not",
+      "and",
+      "or",
+      "True",
+      "False",
+      "None",
+      "import",
+      "from",
+    ];
+    const builtins = [
+      "print",
+      "len",
+      "range",
+      "enumerate",
+      "append",
+      "pop",
+      "str",
+      "int",
+      "float",
+      "list",
+      "dict",
+    ];
+
+    // Process each character in the line
+    while (currentIndex < line.length) {
+      const char = line[currentIndex];
+
+      // Skip whitespace
+      if (/\s/.test(char)) {
+        lineTokens.push({ type: "whitespace", value: char });
+        currentIndex++;
+        continue;
+      }
+
+      // Comments
+      if (char === "#") {
+        lineTokens.push({ type: "comment", value: line.slice(currentIndex) });
+        break;
+      }
+
+      // Strings
+      if (char === '"' || char === "'") {
+        const quote = char;
+        let stringValue = quote;
+        currentIndex++;
+
+        while (currentIndex < line.length && line[currentIndex] !== quote) {
+          stringValue += line[currentIndex];
+          currentIndex++;
+        }
+
+        if (currentIndex < line.length) {
+          stringValue += line[currentIndex];
+          currentIndex++;
+        }
+
+        lineTokens.push({ type: "string", value: stringValue });
+        continue;
+      }
+
+      // Numbers
+      if (/\d/.test(char)) {
+        let numberValue = "";
+        while (currentIndex < line.length && /[\d.]/.test(line[currentIndex])) {
+          numberValue += line[currentIndex];
+          currentIndex++;
+        }
+        lineTokens.push({ type: "number", value: numberValue });
+        continue;
+      }
+
+      // Identifiers and keywords
+      if (/[a-zA-Z_]/.test(char)) {
+        let identifier = "";
+        while (
+          currentIndex < line.length &&
+          /[a-zA-Z0-9_]/.test(line[currentIndex])
+        ) {
+          identifier += line[currentIndex];
+          currentIndex++;
+        }
+
+        let type = "identifier";
+        if (keywords.includes(identifier)) {
+          type = "keyword";
+        } else if (builtins.includes(identifier)) {
+          type = "builtin";
+        }
+
+        lineTokens.push({ type, value: identifier });
+        continue;
+      }
+
+      // Operators and punctuation
+      lineTokens.push({ type: "operator", value: char });
+      currentIndex++;
+    }
+
+    tokens.push(lineTokens);
+  });
+
+  return tokens;
+};
+
+// Enhanced Typing Animation Component
+const CodeTypingAnimation = () => {
+  const [currentExampleIndex, setCurrentExampleIndex] = useState(0);
+  const [displayedCode, setDisplayedCode] = useState("");
+  const [currentCharIndex, setCurrentCharIndex] = useState(0);
+  const [isTyping, setIsTyping] = useState(true);
+  const [isPaused, setIsPaused] = useState(false);
+
+  const currentExample = codeExamples[currentExampleIndex];
+  const typingSpeed = 20;
+
+  useEffect(() => {
+    if (isPaused || !isTyping) return;
+
+    const timer = setTimeout(() => {
+      if (currentCharIndex < currentExample.code.length) {
+        setDisplayedCode(currentExample.code.slice(0, currentCharIndex + 1));
+        setCurrentCharIndex(currentCharIndex + 1);
+      } else {
+        setTimeout(() => {
+          setCurrentExampleIndex((prev) => (prev + 1) % codeExamples.length);
+          setDisplayedCode("");
+          setCurrentCharIndex(0);
+        }, 3000);
+      }
+    }, typingSpeed);
+
+    return () => clearTimeout(timer);
+  }, [currentCharIndex, currentExample.code, isPaused, isTyping]);
+
+  const togglePause = () => {
+    setIsPaused(!isPaused);
+  };
+
+  const resetAnimation = () => {
+    setCurrentExampleIndex(0);
+    setDisplayedCode("");
+    setCurrentCharIndex(0);
+    setIsTyping(true);
+    setIsPaused(false);
+  };
+
+  const getDifficultyColor = (difficulty) => {
+    switch (difficulty) {
+      case "Easy":
+        return "text-emerald-400 bg-emerald-500/10 border-emerald-500/30";
+      case "Medium":
+        return "text-amber-400 bg-amber-500/10 border-amber-500/30";
+      case "Hard":
+        return "text-red-400 bg-red-500/10 border-red-500/30";
+      default:
+        return "text-gray-400 bg-gray-500/10 border-gray-500/30";
+    }
+  };
+
+  // Render highlighted code
+  const renderHighlightedCode = () => {
+    const tokens = highlightSyntax(displayedCode);
+
+    return (
+      <div className="font-mono text-sm leading-relaxed">
+        {tokens.map((lineTokens, lineIndex) => (
+          <div key={lineIndex} className="min-h-[1.4em]">
+            {lineTokens.map((token, tokenIndex) => {
+              let className = "text-gray-100";
+
+              switch (token.type) {
+                case "keyword":
+                  className = "text-purple-400 font-semibold";
+                  break;
+                case "string":
+                  className = "text-green-400";
+                  break;
+                case "comment":
+                  className = "text-gray-500 italic";
+                  break;
+                case "number":
+                  className = "text-orange-400";
+                  break;
+                case "builtin":
+                  className = "text-cyan-400";
+                  break;
+                case "operator":
+                  className = "text-pink-400";
+                  break;
+                case "identifier":
+                  className = "text-blue-300";
+                  break;
+                default:
+                  className = "text-gray-100";
+              }
+
+              return (
+                <span key={tokenIndex} className={className}>
+                  {token.value}
+                </span>
+              );
+            })}
+          </div>
+        ))}
+        {currentCharIndex < currentExample.code.length && (
+          <span className="animate-pulse bg-white text-black ml-0.5 inline-block w-2">
+            |
+          </span>
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <div className="w-full max-w-4xl mx-auto">
+      {/* Main Terminal Container */}
+      <div className="bg-black rounded-2xl overflow-hidden shadow-2xl border border-gray-800 backdrop-blur-sm relative">
+        {/* Animated Background Pattern */}
+        <div className="absolute inset-0 opacity-5">
+          <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.1)_50%,transparent_75%)] bg-[length:20px_20px] animate-pulse"></div>
+        </div>
+
+        {/* Enhanced Terminal Header */}
+        <div className="relative z-10 flex items-center justify-between px-6 py-4 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 border-b border-gray-700">
+          <div className="flex items-center space-x-4">
+            <div className="flex space-x-2">
+              <div className="w-3 h-3 bg-red-500 rounded-full shadow-lg animate-pulse"></div>
+              <div
+                className="w-3 h-3 bg-yellow-500 rounded-full shadow-lg animate-pulse"
+                style={{ animationDelay: "0.2s" }}
+              ></div>
+              <div
+                className="w-3 h-3 bg-green-500 rounded-full shadow-lg animate-pulse"
+                style={{ animationDelay: "0.4s" }}
+              ></div>
+            </div>
+            <div className="flex items-center space-x-3">
+              <FiCode className="w-4 h-4 text-gray-400" />
+              <span className="text-white text-sm font-semibold">
+                {currentExample.title}
+              </span>
+              <span
+                className={`px-3 py-1 rounded-full text-xs font-medium border ${getDifficultyColor(
+                  currentExample.difficulty
+                )}`}
+              >
+                {currentExample.difficulty}
+              </span>
+              <span className="px-2 py-1 bg-blue-500/20 text-blue-400 text-xs rounded border border-blue-500/30">
+                {currentExample.category}
+              </span>
+            </div>
+          </div>
+          <div className="flex items-center space-x-3">
+            <button
+              onClick={togglePause}
+              className="p-2 rounded-lg hover:bg-gray-700 transition-all duration-200 text-gray-400 hover:text-white group"
+              title={isPaused ? "Resume" : "Pause"}
+            >
+              {isPaused ? (
+                <FiPlay className="w-4 h-4 group-hover:text-green-400 transition-colors" />
+              ) : (
+                <FiPause className="w-4 h-4 group-hover:text-yellow-400 transition-colors" />
+              )}
+            </button>
+            <div className="flex items-center space-x-2 text-xs text-gray-400">
+              <span className="px-2 py-1 bg-gray-800 rounded border border-gray-700">
+                {currentExample.language}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Enhanced Complexity Info Bar */}
+
+        {/* Enhanced Code Content */}
+        <div className="relative">
+          <div className="p-6 h-96 overflow-hidden bg-gradient-to-br from-black via-gray-900 to-black">
+            {/* Line numbers */}
+            <div className="flex">
+              <div className="flex flex-col text-gray-600 text-xs mr-4 select-none">
+                {displayedCode.split("\n").map((_, index) => (
+                  <div
+                    key={index}
+                    className="h-[1.4em] flex items-center justify-end w-8"
+                  >
+                    {index + 1}
+                  </div>
+                ))}
+              </div>
+              <div className="flex-1 overflow-hidden">
+                {renderHighlightedCode()}
+              </div>
+            </div>
+          </div>
+
+          {/* Enhanced Progress Indicator */}
+          <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-800">
+            <div
+              className="h-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 transition-all duration-100 shadow-lg relative overflow-hidden"
+              style={{
+                width: `${
+                  (currentCharIndex / currentExample.code.length) * 100
+                }%`,
+              }}
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-pulse"></div>
+            </div>
+          </div>
+
+          {/* Enhanced Floating Particles */}
+          <div className="absolute inset-0 pointer-events-none overflow-hidden">
+            {[...Array(12)].map((_, i) => (
+              <motion.div
+                key={i}
+                className="absolute w-1 h-1 bg-blue-400 rounded-full opacity-30"
+                animate={{
+                  x: [0, Math.random() * 200 - 100, Math.random() * 200 - 100],
+                  y: [0, Math.random() * 200 - 100, Math.random() * 200 - 100],
+                  opacity: [0, 0.6, 0],
+                  scale: [0.5, 1, 0.5],
+                }}
+                transition={{
+                  duration: 4 + Math.random() * 3,
+                  repeat: Number.POSITIVE_INFINITY,
+                  delay: Math.random() * 3,
+                  ease: "easeInOut",
+                }}
+                style={{
+                  left: `${Math.random() * 100}%`,
+                  top: `${Math.random() * 100}%`,
+                }}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Enhanced Footer */}
+        <div className="relative z-10 px-6 py-4 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 border-t border-gray-700">
+          <div className="flex items-center justify-between">
+            <div className="flex space-x-2">
+              {codeExamples.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => {
+                    setCurrentExampleIndex(index);
+                    setDisplayedCode("");
+                    setCurrentCharIndex(0);
+                  }}
+                  className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                    index === currentExampleIndex
+                      ? "bg-blue-500 shadow-lg shadow-blue-500/50 scale-125"
+                      : "bg-gray-600 hover:bg-gray-500 hover:scale-110"
+                  }`}
+                />
+              ))}
+            </div>
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={resetAnimation}
+                className="text-xs text-gray-400 hover:text-white transition-colors px-3 py-1 rounded-md hover:bg-gray-800"
+              >
+                Reset
+              </button>
+              <div className="text-xs text-gray-500">
+                {currentExampleIndex + 1} / {codeExamples.length}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Enhanced Problem Info */}
+      <motion.div
+        className="mt-8 text-center"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5 }}
+      >
+        <h3 className="text-2xl font-bold bg-gradient-to-r from-white via-gray-200 to-white bg-clip-text text-transparent mb-3">
+          {currentExample.title}
+        </h3>
+      </motion.div>
+    </div>
+  );
+};
+
 const Home = () => {
   const { user } = useAuth();
 
@@ -33,7 +553,7 @@ const Home = () => {
     "categories",
     () => axios.get("/api/questions/stats/categories").then((res) => res.data),
     {
-      staleTime: 5 * 60 * 1000, // 5 minutes
+      staleTime: 5 * 60 * 1000,
     }
   );
 
@@ -43,7 +563,7 @@ const Home = () => {
     () => axios.get("/api/progress").then((res) => res.data),
     {
       enabled: !!user,
-      staleTime: 2 * 60 * 1000, // 2 minutes
+      staleTime: 2 * 60 * 1000,
     }
   );
 
@@ -71,7 +591,7 @@ const Home = () => {
     categoriesData?.categories?.reduce(
       (total, category) => total + category.count,
       0
-    ) || 150; // Fallback to 150 if not loaded yet
+    ) || 150;
   const totalSolved = progressData?.stats?.totalSolved || 0;
   const totalStarred = progressData?.stats?.totalStarred || 0;
   const totalRemaining = totalQuestions - totalSolved;
@@ -133,25 +653,25 @@ const Home = () => {
     {
       name: "Solved",
       value: totalSolved,
-      color: "#10b981", // emerald-500
-      gradient: ["#10b981", "#059669"], // emerald-500 to emerald-600
+      color: "#10b981",
+      gradient: ["#10b981", "#059669"],
       icon: "✅",
     },
     {
       name: "Starred",
       value: totalStarred,
-      color: "#f59e0b", // amber-500
-      gradient: ["#f59e0b", "#d97706"], // amber-500 to amber-600
+      color: "#f59e0b",
+      gradient: ["#f59e0b", "#d97706"],
       icon: "⭐",
     },
     {
       name: "Remaining",
       value: totalRemaining,
-      color: "#64748b", // slate-500
-      gradient: ["#64748b", "#475569"], // slate-500 to slate-600
+      color: "#64748b",
+      gradient: ["#64748b", "#475569"],
       icon: "📝",
     },
-  ].filter((item) => item.value > 0); // Only include non-zero values
+  ].filter((item) => item.value > 0);
 
   // Custom tooltip for category chart
   const CustomCategoryTooltip = ({ active, payload, label }) => {
@@ -293,23 +813,23 @@ const Home = () => {
 
   // Enhanced category chart colors with gradients
   const categoryColors = [
-    "#3b82f6", // blue-500
-    "#4f46e5", // indigo-600
-    "#7c3aed", // violet-600
-    "#9333ea", // purple-600
-    "#c026d3", // fuchsia-600
-    "#db2777", // pink-600
-    "#e11d48", // rose-600
-    "#dc2626", // red-600
-    "#ea580c", // orange-600
-    "#d97706", // amber-600
-    "#ca8a04", // yellow-600
-    "#65a30d", // lime-600
-    "#16a34a", // green-600
-    "#0d9488", // teal-600
-    "#0891b2", // cyan-600
-    "#0284c7", // sky-600
-    "#1d4ed8", // blue-700
+    "#3b82f6",
+    "#4f46e5",
+    "#7c3aed",
+    "#9333ea",
+    "#c026d3",
+    "#db2777",
+    "#e11d48",
+    "#dc2626",
+    "#ea580c",
+    "#d97706",
+    "#ca8a04",
+    "#65a30d",
+    "#16a34a",
+    "#0d9488",
+    "#0891b2",
+    "#0284c7",
+    "#1d4ed8",
   ];
 
   return (
@@ -319,194 +839,132 @@ const Home = () => {
       animate="visible"
       className="space-y-8 sm:space-y-12"
     >
-      {/* Hero Section */}
+      {/* Enhanced Hero Section with Black-White Theme */}
       <section id="hero">
         <motion.div
-          className="relative overflow-hidden bg-gradient-to-br from-yellow-200 via-blue-50 to-orange-200 dark:from-slate-900 dark:via-blue-900/20 dark:to-indigo-900/30 rounded-2xl sm:rounded-3xl border border-slate-200/60 dark:border-slate-700/60 mb-8 sm:mb-10 shadow-xl dark:shadow-2xl"
+          className="relative overflow-hidden bg-gradient-to-br from-black via-gray-900 to-black rounded-3xl border border-gray-800 mb-8 sm:mb-10 shadow-2xl"
           variants={containerVariants}
           initial="hidden"
           animate="visible"
         >
-          {/* Grid background with responsive sizing */}
+          {/* Enhanced Animated Grid Background */}
           <div className="absolute inset-0 pointer-events-none">
-            <div className="absolute inset-0 bg-[linear-gradient(to_right,#e2e8f0_2px,transparent_2px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)] bg-[size:24px_24px] dark:bg-[linear-gradient(to_right,#334155_1px,transparent_1px),linear-gradient(to_bottom,#334155_1px,transparent_1px)] opacity-30"></div>
-            <div className="absolute inset-0 bg-gradient-to-br from-white/60 via-transparent to-blue-500/5 dark:from-slate-900/80 dark:via-transparent dark:to-blue-500/10"></div>
+            <div className="absolute inset-0 bg-[linear-gradient(to_right,#374151_1px,transparent_1px),linear-gradient(to_bottom,#374151_1px,transparent_1px)] bg-[size:40px_40px] opacity-20"></div>
+            <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-blue-500/10"></div>
           </div>
 
-          <div className="relative z-10 px-4 sm:px-6 lg:px-8 py-8 sm:py-12 md:py-20">
+          {/* Enhanced Floating Geometric Shapes */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            {[...Array(8)].map((_, i) => (
+              <motion.div
+                key={i}
+                className="absolute border border-white/10 rounded-full"
+                style={{
+                  width: `${80 + i * 20}px`,
+                  height: `${80 + i * 20}px`,
+                  left: `${Math.random() * 100}%`,
+                  top: `${Math.random() * 100}%`,
+                }}
+                animate={{
+                  x: [0, 150, -150, 0],
+                  y: [0, -150, 150, 0],
+                  rotate: [0, 180, 360],
+                  scale: [1, 1.3, 0.8, 1],
+                  opacity: [0.1, 0.3, 0.1],
+                }}
+                transition={{
+                  duration: 25 + i * 5,
+                  repeat: Number.POSITIVE_INFINITY,
+                  ease: "linear",
+                }}
+              />
+            ))}
+          </div>
+
+          {/* Spotlight Effect */}
+          <div className="absolute inset-0 bg-gradient-radial from-white/5 via-transparent to-transparent"></div>
+
+          <div className="relative z-10 px-4 sm:px-6 lg:px-8 py-12 sm:py-16 md:py-12">
             <div className="max-w-7xl mx-auto">
-              <div className="flex flex-col lg:flex-row items-center justify-between gap-6 sm:gap-8 lg:gap-12">
-                {/* Left section */}
-                <motion.div className="flex-1 w-full" variants={itemVariants}>
+              <div className="flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-16">
+                {/* Enhanced Left section */}
+                <motion.div
+                  className="flex-1 w-full lg:max-w-2xl"
+                  variants={itemVariants}
+                >
                   <motion.div
-                    className="inline-flex items-center px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-semibold bg-gradient-to-r from-emerald-100 to-teal-100 dark:from-emerald-900/40 dark:to-teal-900/40 text-emerald-800 dark:text-emerald-200 mb-4 sm:mb-6 shadow-sm border border-emerald-200/50 dark:border-emerald-700/50"
+                    className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-gradient-to-r from-white/10 to-gray-800/50 text-white mb-6 shadow-lg border border-white/20 backdrop-blur-sm"
                     variants={itemVariants}
+                    whileHover={{
+                      scale: 1.05,
+                      boxShadow: "0 0 20px rgba(255,255,255,0.2)",
+                    }}
                   >
-                    ✨ Learn DSA with {totalQuestions - 3}+ Problems
+                    <span className="w-2 h-2 bg-green-400 rounded-full mr-3 animate-pulse"></span>
+                    ✨ Learn DSA with {totalQuestions - 3}+ Curated Problems
                   </motion.div>
 
                   <motion.h1
-                    className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-4 sm:mb-6 bg-gradient-to-r from-slate-900 via-blue-800 to-indigo-800 dark:from-slate-100 dark:via-blue-200 dark:to-indigo-200 bg-clip-text text-transparent"
+                    className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6 leading-tight"
                     variants={itemVariants}
                   >
-                    Level Up Your Coding Skills
+                    <span className="bg-gradient-to-r from-white via-gray-200 to-white bg-clip-text text-transparent">
+                      Code Your Way to
+                    </span>
+                    <br />
+                    <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                      Excellence
+                    </span>
                   </motion.h1>
 
                   <motion.p
-                    className="text-sm sm:text-base md:text-lg lg:text-xl text-slate-600 dark:text-slate-300 mb-6 sm:mb-8 max-w-xl leading-relaxed"
+                    className="text-lg md:text-xl text-gray-300 mb-8 max-w-xl leading-relaxed"
                     variants={itemVariants}
                   >
-                    Practice the most important algorithms and ace your
-                    technical interviews with our curated collection of{" "}
-                    {totalQuestions - 3}+ essential problems.
+                    Transform your coding journey with our interactive platform.
+                    Practice and learn essential algorithms, conquer data
+                    structures, and ace technical interviews with confidence.
                   </motion.p>
 
                   <motion.div
-                    className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-6 sm:mb-8"
+                    className="flex flex-col sm:flex-row gap-4 mb-8"
                     variants={itemVariants}
                   >
                     <motion.a
                       href="#categories"
-                      className="inline-flex items-center justify-center px-4 sm:px-6 py-3 text-sm sm:text-base font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-xl shadow-lg hover:shadow-xl transform transition-all duration-200 hover:scale-105 border border-blue-500/20"
-                      whileHover={{ scale: 1.05 }}
+                      className="group inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-black bg-white hover:bg-gray-100 rounded-xl shadow-lg hover:shadow-xl transform transition-all duration-300"
+                      whileHover={{
+                        scale: 1.05,
+                        boxShadow: "0 20px 40px rgba(255,255,255,0.3)",
+                      }}
                       whileTap={{ scale: 0.98 }}
                     >
                       Start Learning
-                      <FiChevronRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
+                      <FiChevronRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                     </motion.a>
+                    
                   </motion.div>
 
-                  {/* Motivational Chart */}
-                  <motion.div
-                    className="bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-slate-200/60 dark:border-slate-700/60 max-w-md lg:max-w-2xl shadow-lg"
-                    variants={itemVariants}
-                  >
-                    <div className="flex items-center mb-3 sm:mb-4">
-                      <h3 className="text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300">
-                        🚀 Path to Success
-                      </h3>
-                    </div>
-                    <svg
-                      viewBox="0 0 200 100"
-                      className="w-full h-24 sm:h-32 text-blue-600 dark:text-blue-400"
-                    >
-                      <defs>
-                        <linearGradient
-                          id="pathGradient"
-                          x1="0%"
-                          y1="0%"
-                          x2="100%"
-                          y2="0%"
-                        >
-                          <stop offset="0%" stopColor="#3b82f6" />
-                          <stop offset="100%" stopColor="#6366f1" />
-                        </linearGradient>
-                      </defs>
-                      <path
-                        d="M0,90 Q40,20 80,60 T160,30"
-                        fill="none"
-                        stroke="url(#pathGradient)"
-                        strokeWidth="4"
-                        strokeLinecap="round"
-                      />
-                      <text
-                        x="5"
-                        y="95"
-                        fontSize="10"
-                        fill="#64748b"
-                        className="dark:fill-slate-400"
-                      >
-                        Failure
-                      </text>
-                      <text
-                        x="160"
-                        y="25"
-                        fontSize="10"
-                        fill="#64748b"
-                        className="dark:fill-slate-400"
-                      >
-                        Success
-                      </text>
-                    </svg>
-                    <p className="text-xs text-center text-slate-500 dark:text-slate-400 mt-2 font-medium">
-                      Every curve in the path reflects a learning moment.
-                    </p>
-                  </motion.div>
+                  {/* Enhanced Stats Row */}
                 </motion.div>
 
-                {/* Right section - Progress */}
+                {/* Right section - Enhanced Code Typing Animation */}
                 <motion.div
-                  className="flex-shrink-0 relative w-full max-w-xs mx-auto lg:mx-0 mt-6 sm:mt-10 md:mt-12"
+                  className="flex-1 w-full max-w-4xl"
                   variants={itemVariants}
                 >
-                  <div className="relative  w-52 h-52 lg:w-64 lg:h-64 mx-auto animate-bounce mt-8">
-                    <div className="absolute inset-0 rounded-full bg-gradient-to-br from-blue-100 via-indigo-100 to-purple-100 dark:from-blue-900/30 dark:via-indigo-900/30 dark:to-purple-900/30 flex items-center justify-center p-6 sm:p-8 shadow-2xl border border-blue-200/50 dark:border-blue-700/50">
-                      <div className="bar">
-                        <div className="ball bg-gradient-to-r from-blue-500 to-indigo-500"></div>
-                      </div>
-                    </div>
-                    <svg
-                      className="absolute inset-0 w-full h-full"
-                      viewBox="0 0 100 100"
-                    >
-                      <circle
-                        className="stroke-current text-slate-200 dark:text-slate-700"
-                        strokeWidth="4"
-                        fill="transparent"
-                        r="47"
-                        cx="50"
-                        cy="50"
-                      />
-                      <circle
-                        className="stroke-current text-blue-500 dark:text-blue-400"
-                        strokeWidth="4"
-                        strokeLinecap="round"
-                        fill="transparent"
-                        r="47"
-                        cx="50"
-                        cy="50"
-                        strokeDasharray="295.31"
-                        strokeDashoffset={
-                          295.31 -
-                          (295.31 *
-                            Math.round((totalSolved / totalQuestions) * 100)) /
-                            100
-                        }
-                        transform="rotate(-90 50 50)"
-                      >
-                        <animate
-                          attributeName="stroke-dashoffset"
-                          from="295.31"
-                          to={
-                            295.31 -
-                            (295.31 *
-                              Math.round(
-                                (totalSolved / totalQuestions) * 100
-                              )) /
-                              100
-                          }
-                          dur="2s"
-                          fill="freeze"
-                          calcMode="spline"
-                          keySplines="0.4 0 0.2 1"
-                        />
-                      </circle>
-                    </svg>
-                    <div className="absolute inset-0 flex items-center justify-center mt-16 sm:mt-20 md:mt-24">
-                      <div className="text-center mt-6">
-                        <span className="block text-xl md:text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
-                          {totalSolved}/{totalQuestions}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
+                  <CodeTypingAnimation />
                 </motion.div>
               </div>
             </div>
           </div>
+
+          {/* Enhanced Bottom Gradient */}
+          <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black via-black/80 to-transparent"></div>
         </motion.div>
       </section>
 
+      {/* Rest of the sections remain the same... */}
       {/* User Stats Section */}
       {user && (
         <motion.section variants={itemVariants}>
@@ -518,7 +976,7 @@ const Home = () => {
               <LoadingSpinner />
             ) : (
               <div className="space-y-6 sm:space-y-8">
-                {/* Enhanced Category Distribution Bar Chart */}
+                {/* Category Distribution Bar Chart */}
                 <div className="bg-gradient-to-br from-white/80 to-slate-50/80 dark:from-slate-800/80 dark:to-slate-900/80 backdrop-blur-sm rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-slate-200/60 dark:border-slate-700/60 shadow-lg">
                   <h3 className="text-base sm:text-lg font-semibold bg-gradient-to-r from-slate-900 to-slate-700 dark:from-slate-100 dark:to-slate-300 bg-clip-text text-transparent mb-4 sm:mb-6 text-center">
                     📊 Questions by Category
@@ -606,7 +1064,6 @@ const Home = () => {
                             textAnchor: "end",
                           }}
                           tickFormatter={(value) => {
-                            // Find the full name for this category
                             const category = categoryChartData.find(
                               (cat) => cat.name === value
                             );
@@ -655,13 +1112,12 @@ const Home = () => {
                     </ResponsiveContainer>
                   </div>
                 </div>
-                {/* Enhanced Progress Overview Pie Chart */}
+                {/* Progress Overview Pie Chart */}
                 <div className="bg-gradient-to-br from-white/80 to-slate-50/80 dark:from-slate-800/80 dark:to-slate-900/80 backdrop-blur-sm rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-slate-200/60 dark:border-slate-700/60 shadow-lg">
                   <h3 className="text-base sm:text-lg font-semibold bg-gradient-to-r from-slate-900 to-slate-700 dark:from-slate-100 dark:to-slate-300 bg-clip-text text-transparent mb-4 sm:mb-6 text-center">
                     🎯 Progress Overview
                   </h3>
                   <div className="flex flex-col xl:flex-row items-center justify-center gap-6 sm:gap-8">
-                    {/* Enhanced Pie Chart */}
                     <div className="w-full max-w-sm sm:max-w-md">
                       <div className="h-64 sm:h-80 lg:h-96">
                         <ResponsiveContainer width="100%" height="100%">
@@ -725,7 +1181,6 @@ const Home = () => {
                       </div>
                     </div>
 
-                    {/* Enhanced Legend */}
                     <div className="w-full max-w-sm space-y-3 sm:space-y-4">
                       {progressPieData.map((entry, index) => (
                         <motion.div
