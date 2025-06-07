@@ -4,15 +4,7 @@ import "../pages/App.css";
 import { Link } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import {
-  FiChevronRight,
-  FiPlay,
-  FiPause,
-  FiCode,
-  FiTarget,
-  FiCpu,
-  FiDatabase,
-} from "react-icons/fi";
+import { FiChevronRight, FiPlay, FiPause, FiCode } from "react-icons/fi";
 import { useAuth } from "../contexts/AuthContext";
 import { useQuery } from "react-query";
 import axios from "axios";
@@ -262,16 +254,28 @@ const highlightSyntax = (code) => {
   return tokens;
 };
 
-// Enhanced Typing Animation Component
+// Enhanced Typing Animation Component with Mobile Responsiveness
 const CodeTypingAnimation = () => {
   const [currentExampleIndex, setCurrentExampleIndex] = useState(0);
   const [displayedCode, setDisplayedCode] = useState("");
   const [currentCharIndex, setCurrentCharIndex] = useState(0);
   const [isTyping, setIsTyping] = useState(true);
   const [isPaused, setIsPaused] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   const currentExample = codeExamples[currentExampleIndex];
   const typingSpeed = 20;
+
+  // Detect mobile screen size
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   useEffect(() => {
     if (isPaused || !isTyping) return;
@@ -317,14 +321,18 @@ const CodeTypingAnimation = () => {
     }
   };
 
-  // Render highlighted code
+  // Render highlighted code with mobile responsiveness
   const renderHighlightedCode = () => {
     const tokens = highlightSyntax(displayedCode);
 
     return (
-      <div className="font-mono text-sm leading-relaxed">
+      <div
+        className={`font-mono leading-relaxed overflow-x-auto ${
+          isMobile ? "text-xs" : "text-sm"
+        }`}
+      >
         {tokens.map((lineTokens, lineIndex) => (
-          <div key={lineIndex} className="min-h-[1.4em]">
+          <div key={lineIndex} className="min-h-[1.4em] whitespace-nowrap">
             {lineTokens.map((token, tokenIndex) => {
               let className = "text-gray-100";
 
@@ -373,82 +381,119 @@ const CodeTypingAnimation = () => {
 
   return (
     <div className="w-full max-w-4xl mx-auto">
-      {/* Main Terminal Container */}
-      <div className="bg-black rounded-2xl overflow-hidden shadow-2xl border border-gray-800 backdrop-blur-sm relative">
+      {/* Main Terminal Container - Enhanced Mobile Responsiveness */}
+      <div className="bg-black rounded-xl sm:rounded-2xl overflow-hidden shadow-2xl border border-gray-800 backdrop-blur-sm relative">
         {/* Animated Background Pattern */}
         <div className="absolute inset-0 opacity-5">
           <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.1)_50%,transparent_75%)] bg-[length:20px_20px] animate-pulse"></div>
         </div>
 
-        {/* Enhanced Terminal Header */}
-        <div className="relative z-10 flex items-center justify-between px-6 py-4 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 border-b border-gray-700">
-          <div className="flex items-center space-x-4">
-            <div className="flex space-x-2">
-              <div className="w-3 h-3 bg-red-500 rounded-full shadow-lg animate-pulse"></div>
+        {/* Enhanced Terminal Header - Mobile Responsive */}
+        <div className="relative z-10 flex items-center justify-between px-3 sm:px-6 py-3 sm:py-4 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 border-b border-gray-700">
+          <div className="flex items-center space-x-2 sm:space-x-4 min-w-0 flex-1">
+            <div className="flex space-x-1 sm:space-x-2">
+              <div className="w-2 h-2 sm:w-3 sm:h-3 bg-red-500 rounded-full shadow-lg animate-pulse"></div>
               <div
-                className="w-3 h-3 bg-yellow-500 rounded-full shadow-lg animate-pulse"
+                className="w-2 h-2 sm:w-3 sm:h-3 bg-yellow-500 rounded-full shadow-lg animate-pulse"
                 style={{ animationDelay: "0.2s" }}
               ></div>
               <div
-                className="w-3 h-3 bg-green-500 rounded-full shadow-lg animate-pulse"
+                className="w-2 h-2 sm:w-3 sm:h-3 bg-green-500 rounded-full shadow-lg animate-pulse"
                 style={{ animationDelay: "0.4s" }}
               ></div>
             </div>
-            <div className="flex items-center space-x-3">
-              <FiCode className="w-4 h-4 text-gray-400" />
-              <span className="text-white text-sm font-semibold">
+            <div className="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1">
+              <FiCode className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400 flex-shrink-0" />
+              <span className="text-white text-xs sm:text-sm font-semibold truncate">
                 {currentExample.title}
               </span>
-              <span
-                className={`px-3 py-1 rounded-full text-xs font-medium border ${getDifficultyColor(
-                  currentExample.difficulty
-                )}`}
-              >
-                {currentExample.difficulty}
-              </span>
-              <span className="px-2 py-1 bg-blue-500/20 text-blue-400 text-xs rounded border border-blue-500/30">
-                {currentExample.category}
-              </span>
+              {!isMobile && (
+                <>
+                  <span
+                    className={`px-2 sm:px-3 py-1 rounded-full text-xs font-medium border ${getDifficultyColor(
+                      currentExample.difficulty
+                    )}`}
+                  >
+                    {currentExample.difficulty}
+                  </span>
+                  <span className="px-2 py-1 bg-blue-500/20 text-blue-400 text-xs rounded border border-blue-500/30">
+                    {currentExample.category}
+                  </span>
+                </>
+              )}
             </div>
           </div>
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-2 sm:space-x-3 flex-shrink-0">
             <button
               onClick={togglePause}
-              className="p-2 rounded-lg hover:bg-gray-700 transition-all duration-200 text-gray-400 hover:text-white group"
+              className="p-1.5 sm:p-2 rounded-lg hover:bg-gray-700 transition-all duration-200 text-gray-400 hover:text-white group"
               title={isPaused ? "Resume" : "Pause"}
             >
               {isPaused ? (
-                <FiPlay className="w-4 h-4 group-hover:text-green-400 transition-colors" />
+                <FiPlay className="w-3 h-3 sm:w-4 sm:h-4 group-hover:text-green-400 transition-colors" />
               ) : (
-                <FiPause className="w-4 h-4 group-hover:text-yellow-400 transition-colors" />
+                <FiPause className="w-3 h-3 sm:w-4 sm:h-4 group-hover:text-yellow-400 transition-colors" />
               )}
             </button>
-            <div className="flex items-center space-x-2 text-xs text-gray-400">
-              <span className="px-2 py-1 bg-gray-800 rounded border border-gray-700">
+            {!isMobile && (
+              <div className="flex items-center space-x-2 text-xs text-gray-400">
+                <span className="px-2 py-1 bg-gray-800 rounded border border-gray-700">
+                  {currentExample.language}
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Mobile-specific info bar */}
+        {isMobile && (
+          <div className="px-3 py-2 bg-gray-800/50 border-b border-gray-700">
+            <div className="flex items-center justify-between text-xs">
+              <div className="flex items-center space-x-2">
+                <span
+                  className={`px-2 py-1 rounded-full text-xs font-medium border ${getDifficultyColor(
+                    currentExample.difficulty
+                  )}`}
+                >
+                  {currentExample.difficulty}
+                </span>
+                <span className="px-2 py-1 bg-blue-500/20 text-blue-400 text-xs rounded border border-blue-500/30">
+                  {currentExample.category}
+                </span>
+              </div>
+              <span className="px-2 py-1 bg-gray-800 rounded border border-gray-700 text-gray-400">
                 {currentExample.language}
               </span>
             </div>
           </div>
-        </div>
+        )}
 
-        {/* Enhanced Complexity Info Bar */}
-
-        {/* Enhanced Code Content */}
+        {/* Enhanced Code Content - Mobile Responsive */}
         <div className="relative">
-          <div className="p-6 h-96 overflow-hidden bg-gradient-to-br from-black via-gray-900 to-black">
+          <div
+            className={`p-3 sm:p-6 overflow-hidden bg-gradient-to-br from-black via-gray-900 to-black ${
+              isMobile ? "h-64 sm:h-80" : "h-80 sm:h-96"
+            }`}
+          >
             {/* Line numbers */}
             <div className="flex">
-              <div className="flex flex-col text-gray-600 text-xs mr-4 select-none">
+              <div
+                className={`flex flex-col text-gray-600 mr-2 sm:mr-4 select-none ${
+                  isMobile ? "text-xs" : "text-xs"
+                }`}
+              >
                 {displayedCode.split("\n").map((_, index) => (
                   <div
                     key={index}
-                    className="h-[1.4em] flex items-center justify-end w-8"
+                    className={`h-[1.4em] flex items-center justify-end ${
+                      isMobile ? "w-6" : "w-8"
+                    }`}
                   >
                     {index + 1}
                   </div>
                 ))}
               </div>
-              <div className="flex-1 overflow-hidden">
+              <div className="flex-1 overflow-x-auto">
                 {renderHighlightedCode()}
               </div>
             </div>
@@ -468,37 +513,39 @@ const CodeTypingAnimation = () => {
             </div>
           </div>
 
-          {/* Enhanced Floating Particles */}
+          {/* Enhanced Floating Particles - Reduced for mobile */}
           <div className="absolute inset-0 pointer-events-none overflow-hidden">
-            {[...Array(12)].map((_, i) => (
+            {[...Array(isMobile ? 6 : 12)].map((_, i) => (
               <motion.div
                 key={i}
-                className="absolute w-1 h-1 bg-blue-400 rounded-full opacity-30"
-                animate={{
-                  x: [0, Math.random() * 200 - 100, Math.random() * 200 - 100],
-                  y: [0, Math.random() * 200 - 100, Math.random() * 200 - 100],
-                  opacity: [0, 0.6, 0],
-                  scale: [0.5, 1, 0.5],
-                }}
-                transition={{
-                  duration: 4 + Math.random() * 3,
-                  repeat: Number.POSITIVE_INFINITY,
-                  delay: Math.random() * 3,
-                  ease: "easeInOut",
-                }}
+                className="absolute border border-white/10 rounded-full"
                 style={{
+                  width: `${80 + i * 20}px`,
+                  height: `${80 + i * 20}px`,
                   left: `${Math.random() * 100}%`,
                   top: `${Math.random() * 100}%`,
+                }}
+                animate={{
+                  x: [0, 150, -150, 0],
+                  y: [0, -150, 150, 0],
+                  rotate: [0, 180, 360],
+                  scale: [1, 1.3, 0.8, 1],
+                  opacity: [0.1, 0.3, 0.1],
+                }}
+                transition={{
+                  duration: 25 + i * 5,
+                  repeat: Number.POSITIVE_INFINITY,
+                  ease: "linear",
                 }}
               />
             ))}
           </div>
         </div>
 
-        {/* Enhanced Footer */}
-        <div className="relative z-10 px-6 py-4 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 border-t border-gray-700">
+        {/* Enhanced Footer - Mobile Responsive */}
+        <div className="relative z-10 px-3 sm:px-6 py-3 sm:py-4 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 border-t border-gray-700">
           <div className="flex items-center justify-between">
-            <div className="flex space-x-2">
+            <div className="flex space-x-1 sm:space-x-2">
               {codeExamples.map((_, index) => (
                 <button
                   key={index}
@@ -507,7 +554,7 @@ const CodeTypingAnimation = () => {
                     setDisplayedCode("");
                     setCurrentCharIndex(0);
                   }}
-                  className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                  className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full transition-all duration-300 ${
                     index === currentExampleIndex
                       ? "bg-blue-500 shadow-lg shadow-blue-500/50 scale-125"
                       : "bg-gray-600 hover:bg-gray-500 hover:scale-110"
@@ -515,10 +562,10 @@ const CodeTypingAnimation = () => {
                 />
               ))}
             </div>
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2 sm:space-x-4">
               <button
                 onClick={resetAnimation}
-                className="text-xs text-gray-400 hover:text-white transition-colors px-3 py-1 rounded-md hover:bg-gray-800"
+                className="text-xs text-gray-400 hover:text-white transition-colors px-2 sm:px-3 py-1 rounded-md hover:bg-gray-800"
               >
                 Reset
               </button>
@@ -530,14 +577,18 @@ const CodeTypingAnimation = () => {
         </div>
       </div>
 
-      {/* Enhanced Problem Info */}
+      {/* Enhanced Problem Info - Mobile Responsive */}
       <motion.div
-        className="mt-8 text-center"
+        className="mt-4 sm:mt-8 text-center"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}
       >
-        <h3 className="text-2xl font-bold bg-gradient-to-r from-white via-gray-200 to-white bg-clip-text text-transparent mb-3">
+        <h3
+          className={`font-bold bg-gradient-to-r from-white via-gray-200 to-white bg-clip-text text-transparent mb-3 ${
+            isMobile ? "text-lg" : "text-2xl"
+          }`}
+        >
           {currentExample.title}
         </h3>
       </motion.div>
@@ -679,7 +730,7 @@ const Home = () => {
       const data = payload[0].payload;
       return (
         <div className="bg-white/95 dark:bg-slate-800/95 backdrop-blur-lg p-4 rounded-xl shadow-xl border border-slate-200/50 dark:border-slate-700/50">
-          <p className="font-semibold text-slate-900 dark:text-slate-100 mb-2">
+          <p className="font-semibold text-slate-900 dark:text-slate-100 mb-2 sm:mb-6">
             {data.fullName}
           </p>
           <div className="space-y-1">
@@ -724,7 +775,7 @@ const Home = () => {
       return (
         <div className="bg-white/95 dark:bg-slate-800/95 backdrop-blur-lg p-4 rounded-xl shadow-xl border border-slate-200/50 dark:border-slate-700/50">
           <div className="flex items-center space-x-2 mb-2">
-            <span className="text-lg">{data.icon}</span>
+            <span className="text-lg sm:text-xl">{data.icon}</span>
             <p
               className="font-semibold text-slate-900 dark:text-slate-100"
               style={{ color: data.color }}
@@ -942,7 +993,6 @@ const Home = () => {
                       Start Learning
                       <FiChevronRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                     </motion.a>
-                    
                   </motion.div>
 
                   {/* Enhanced Stats Row */}
@@ -964,8 +1014,7 @@ const Home = () => {
         </motion.div>
       </section>
 
-      {/* Rest of the sections remain the same... */}
-      {/* User Stats Section */}
+      {/* User Stats Section - REORDERED: Progress Overview First, then Questions by Category */}
       {user && (
         <motion.section variants={itemVariants}>
           <div className="bg-white dark:bg-slate-800 rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 shadow-lg border border-slate-200/60 dark:border-slate-700/60">
@@ -976,7 +1025,129 @@ const Home = () => {
               <LoadingSpinner />
             ) : (
               <div className="space-y-6 sm:space-y-8">
-                {/* Category Distribution Bar Chart */}
+                {/* Progress Overview Pie Chart - MOVED TO TOP */}
+                <div className="bg-gradient-to-br from-white/80 to-slate-50/80 dark:from-slate-800/80 dark:to-slate-900/80 backdrop-blur-sm rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-slate-200/60 dark:border-slate-700/60 shadow-lg">
+                  <h3 className="text-base sm:text-lg font-semibold bg-gradient-to-r from-slate-900 to-slate-700 dark:from-slate-100 dark:to-slate-300 bg-clip-text text-transparent mb-4 sm:mb-6 text-center">
+                    🎯 Progress Overview
+                  </h3>
+                  <div className="flex flex-col xl:flex-row items-center justify-center gap-6 sm:gap-8">
+                    <div className="w-full max-w-sm sm:max-w-md">
+                      <div className="h-64 sm:h-80 lg:h-96">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <PieChart>
+                            <defs>
+                              {progressPieData.map((entry, index) => (
+                                <linearGradient
+                                  key={`gradient-${index}`}
+                                  id={`pieGradient-${index}`}
+                                  x1="0"
+                                  y1="0"
+                                  x2="0"
+                                  y2="1"
+                                >
+                                  <stop
+                                    offset="0%"
+                                    stopColor={entry.gradient[0]}
+                                    stopOpacity={1}
+                                  />
+                                  <stop
+                                    offset="100%"
+                                    stopColor={entry.gradient[1]}
+                                    stopOpacity={0.8}
+                                  />
+                                </linearGradient>
+                              ))}
+                            </defs>
+                            <Pie
+                              activeIndex={activePieIndex}
+                              activeShape={renderActiveShape}
+                              data={progressPieData}
+                              cx="50%"
+                              cy="50%"
+                              innerRadius="45%"
+                              outerRadius="75%"
+                              paddingAngle={3}
+                              dataKey="value"
+                              onMouseEnter={(_, index) =>
+                                setActivePieIndex(index)
+                              }
+                              animationBegin={200}
+                              animationDuration={1500}
+                              animationEasing="ease-out"
+                            >
+                              {progressPieData.map((entry, index) => (
+                                <Cell
+                                  key={`cell-${index}`}
+                                  fill={`url(#pieGradient-${index})`}
+                                  stroke={entry.color}
+                                  strokeWidth={2}
+                                  className="drop-shadow-lg hover:drop-shadow-xl transition-all duration-300 cursor-pointer"
+                                />
+                              ))}
+                              {progressPieData.length === 0 && (
+                                <Cell fill="#e2e8f0" />
+                              )}
+                            </Pie>
+                            <Tooltip content={<CustomPieTooltip />} />
+                          </PieChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+
+                    <div className="w-full max-w-sm space-y-3 sm:space-y-4">
+                      {progressPieData.map((entry, index) => (
+                        <motion.div
+                          key={index}
+                          initial={{ opacity: 0, x: 20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{
+                            delay: index * 0.1 + 0.3,
+                            duration: 0.5,
+                          }}
+                          className={`flex items-center space-x-3 sm:space-x-4 p-3 sm:p-4 rounded-xl sm:rounded-2xl transition-all duration-300 cursor-pointer ${
+                            index === activePieIndex
+                              ? "bg-slate-100 dark:bg-slate-700 shadow-md scale-105"
+                              : "bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-700"
+                          }`}
+                          onMouseEnter={() => setActivePieIndex(index)}
+                          whileHover={{ scale: 1.02 }}
+                        >
+                          <div className="flex items-center space-x-2 sm:space-x-3">
+                            <span className="text-lg sm:text-xl">
+                              {entry.icon}
+                            </span>
+                            <div
+                              className="w-3 h-3 sm:w-4 sm:h-4 rounded-full shadow-sm"
+                              style={{
+                                background: `linear-gradient(135deg, ${entry.gradient[0]}, ${entry.gradient[1]})`,
+                              }}
+                            ></div>
+                          </div>
+                          <div className="flex-1">
+                            <div className="text-sm sm:text-base font-semibold text-slate-700 dark:text-slate-300">
+                              {entry.name}
+                            </div>
+                            <div className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+                              {entry.value} problems (
+                              {((entry.value / totalQuestions) * 100).toFixed(
+                                1
+                              )}
+                              %)
+                            </div>
+                          </div>
+                          <div
+                            className="text-lg sm:text-xl font-bold"
+                            style={{ color: entry.color }}
+                          >
+                            {entry.value}
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Questions by Category Bar Chart - MOVED TO BOTTOM */}
                 <div className="bg-gradient-to-br from-white/80 to-slate-50/80 dark:from-slate-800/80 dark:to-slate-900/80 backdrop-blur-sm rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-slate-200/60 dark:border-slate-700/60 shadow-lg">
                   <h3 className="text-base sm:text-lg font-semibold bg-gradient-to-r from-slate-900 to-slate-700 dark:from-slate-100 dark:to-slate-300 bg-clip-text text-transparent mb-4 sm:mb-6 text-center">
                     📊 Questions by Category
@@ -1110,127 +1281,6 @@ const Home = () => {
                         )}
                       </BarChart>
                     </ResponsiveContainer>
-                  </div>
-                </div>
-                {/* Progress Overview Pie Chart */}
-                <div className="bg-gradient-to-br from-white/80 to-slate-50/80 dark:from-slate-800/80 dark:to-slate-900/80 backdrop-blur-sm rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-slate-200/60 dark:border-slate-700/60 shadow-lg">
-                  <h3 className="text-base sm:text-lg font-semibold bg-gradient-to-r from-slate-900 to-slate-700 dark:from-slate-100 dark:to-slate-300 bg-clip-text text-transparent mb-4 sm:mb-6 text-center">
-                    🎯 Progress Overview
-                  </h3>
-                  <div className="flex flex-col xl:flex-row items-center justify-center gap-6 sm:gap-8">
-                    <div className="w-full max-w-sm sm:max-w-md">
-                      <div className="h-64 sm:h-80 lg:h-96">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <PieChart>
-                            <defs>
-                              {progressPieData.map((entry, index) => (
-                                <linearGradient
-                                  key={`gradient-${index}`}
-                                  id={`pieGradient-${index}`}
-                                  x1="0"
-                                  y1="0"
-                                  x2="0"
-                                  y2="1"
-                                >
-                                  <stop
-                                    offset="0%"
-                                    stopColor={entry.gradient[0]}
-                                    stopOpacity={1}
-                                  />
-                                  <stop
-                                    offset="100%"
-                                    stopColor={entry.gradient[1]}
-                                    stopOpacity={0.8}
-                                  />
-                                </linearGradient>
-                              ))}
-                            </defs>
-                            <Pie
-                              activeIndex={activePieIndex}
-                              activeShape={renderActiveShape}
-                              data={progressPieData}
-                              cx="50%"
-                              cy="50%"
-                              innerRadius="45%"
-                              outerRadius="75%"
-                              paddingAngle={3}
-                              dataKey="value"
-                              onMouseEnter={(_, index) =>
-                                setActivePieIndex(index)
-                              }
-                              animationBegin={200}
-                              animationDuration={1500}
-                              animationEasing="ease-out"
-                            >
-                              {progressPieData.map((entry, index) => (
-                                <Cell
-                                  key={`cell-${index}`}
-                                  fill={`url(#pieGradient-${index})`}
-                                  stroke={entry.color}
-                                  strokeWidth={2}
-                                  className="drop-shadow-lg hover:drop-shadow-xl transition-all duration-300 cursor-pointer"
-                                />
-                              ))}
-                              {progressPieData.length === 0 && (
-                                <Cell fill="#e2e8f0" />
-                              )}
-                            </Pie>
-                            <Tooltip content={<CustomPieTooltip />} />
-                          </PieChart>
-                        </ResponsiveContainer>
-                      </div>
-                    </div>
-
-                    <div className="w-full max-w-sm space-y-3 sm:space-y-4">
-                      {progressPieData.map((entry, index) => (
-                        <motion.div
-                          key={index}
-                          initial={{ opacity: 0, x: 20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{
-                            delay: index * 0.1 + 0.3,
-                            duration: 0.5,
-                          }}
-                          className={`flex items-center space-x-3 sm:space-x-4 p-3 sm:p-4 rounded-xl sm:rounded-2xl transition-all duration-300 cursor-pointer ${
-                            index === activePieIndex
-                              ? "bg-slate-100 dark:bg-slate-700 shadow-md scale-105"
-                              : "bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-700"
-                          }`}
-                          onMouseEnter={() => setActivePieIndex(index)}
-                          whileHover={{ scale: 1.02 }}
-                        >
-                          <div className="flex items-center space-x-2 sm:space-x-3">
-                            <span className="text-lg sm:text-xl">
-                              {entry.icon}
-                            </span>
-                            <div
-                              className="w-3 h-3 sm:w-4 sm:h-4 rounded-full shadow-sm"
-                              style={{
-                                background: `linear-gradient(135deg, ${entry.gradient[0]}, ${entry.gradient[1]})`,
-                              }}
-                            ></div>
-                          </div>
-                          <div className="flex-1">
-                            <div className="text-sm sm:text-base font-semibold text-slate-700 dark:text-slate-300">
-                              {entry.name}
-                            </div>
-                            <div className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-                              {entry.value} problems (
-                              {((entry.value / totalQuestions) * 100).toFixed(
-                                1
-                              )}
-                              %)
-                            </div>
-                          </div>
-                          <div
-                            className="text-lg sm:text-xl font-bold"
-                            style={{ color: entry.color }}
-                          >
-                            {entry.value}
-                          </div>
-                        </motion.div>
-                      ))}
-                    </div>
                   </div>
                 </div>
               </div>

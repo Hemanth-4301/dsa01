@@ -14,6 +14,8 @@ import {
   FiSettings,
   FiTrendingUp,
   FiAward,
+  FiTarget,
+  FiStar,
   FiChevronDown,
   FiShield,
 } from "react-icons/fi";
@@ -115,24 +117,24 @@ const Navbar = () => {
     if (totalSolved >= 100)
       return {
         level: "Expert",
-        color: "text-purple-700 dark:text-purple-300",
+        color: "text-purple-600",
         bg: "bg-purple-100 dark:bg-purple-900/30",
       };
     if (totalSolved >= 50)
       return {
         level: "Advanced",
-        color: "text-blue-700 dark:text-blue-300",
+        color: "text-blue-600",
         bg: "bg-blue-100 dark:bg-blue-900/30",
       };
     if (totalSolved >= 20)
       return {
         level: "Intermediate",
-        color: "text-emerald-700 dark:text-emerald-300",
+        color: "text-emerald-600",
         bg: "bg-emerald-100 dark:bg-emerald-900/30",
       };
     return {
       level: "Beginner",
-      color: "text-amber-700 dark:text-amber-300",
+      color: "text-amber-600",
       bg: "bg-amber-100 dark:bg-amber-900/30",
     };
   };
@@ -148,7 +150,7 @@ const Navbar = () => {
             <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
               dark DSA
             </span>
-            <div className="flex items-center space-x-2 text-slate-600 dark:text-slate-400">
+            <div className="flex items-center space-x-2 text-slate-500 dark:text-slate-400">
               <div className="w-4 h-4 bg-slate-300 dark:bg-slate-600 rounded animate-pulse"></div>
               <span className="text-sm">Loading...</span>
             </div>
@@ -187,8 +189,8 @@ const Navbar = () => {
                   to={link.path}
                   className={`relative px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 group ${
                     isActive(link.path)
-                      ? "text-blue-700 dark:text-blue-300 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 shadow-sm"
-                      : "text-slate-700 dark:text-slate-300 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-slate-50 dark:hover:bg-slate-800/50"
+                      ? "text-blue-600 dark:text-blue-400 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 shadow-sm"
+                      : "text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-slate-800/50"
                   }`}
                 >
                   <span className="flex items-center space-x-2">
@@ -208,18 +210,18 @@ const Navbar = () => {
                   )}
                 </Link>
               ))}
-              {user?.isAdmin && (
-                <Link
-                  to="/chatbot"
-                  className="text-slate-700 dark:text-slate-300 flex justify-center items-center p-4 py-[6px] gap-2 rounded-xl hover:text-blue-700 dark:hover:text-blue-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all duration-300"
-                  onClick={() => setShowUserMenu(false)}
-                >
+              <Link
+                to="/chatbot"
+                className="flex items-center space-x-3 px-4 py-1 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-all duration-200 rounded-xl"
+                onClick={() => setIsOpen(false)}
+              >
+                <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex-shrink-0">
                   <FiSettings className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                  <div className="flex-1">
-                    <span className="font-semibold block">Chatbot</span>
-                  </div>
-                </Link>
-              )}
+                </div>
+                <div className="flex-1">
+                  <span className="font-medium block">chatbot</span>
+                </div>
+              </Link>
             </div>
           </div>
 
@@ -229,7 +231,7 @@ const Navbar = () => {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={toggleTheme}
-              className="p-2.5 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-800 dark:hover:text-slate-200 transition-all duration-200 shadow-sm hover:shadow-md"
+              className="p-2.5 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-300 transition-all duration-200 shadow-sm hover:shadow-md"
               aria-label="Toggle theme"
             >
               {isDark ? (
@@ -258,11 +260,11 @@ const Navbar = () => {
                     </div>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 max-w-24 truncate">
+                    <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 max-w-24 truncate">
                       {getDisplayName()}
                     </span>
                     <FiChevronDown
-                      className={`w-4 h-4 text-slate-500 dark:text-slate-400 transition-transform duration-200 ${
+                      className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${
                         showUserMenu ? "rotate-180" : ""
                       }`}
                     />
@@ -347,7 +349,7 @@ const Navbar = () => {
                       <div className="py-2">
                         <Link
                           to="/profile"
-                          className="flex items-center space-x-4 px-6 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-slate-100 transition-all duration-200 group"
+                          className="flex items-center space-x-4 px-6 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-all duration-200 group"
                           onClick={() => setShowUserMenu(false)}
                         >
                           <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg group-hover:bg-blue-200 dark:group-hover:bg-blue-900/50 transition-colors duration-200 flex-shrink-0">
@@ -363,7 +365,7 @@ const Navbar = () => {
                         {user.isAdmin && (
                           <Link
                             to="/admin"
-                            className="flex items-center space-x-4 px-6 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-slate-100 transition-all duration-200 group"
+                            className="flex items-center space-x-4 px-6 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-all duration-200 group"
                             onClick={() => setShowUserMenu(false)}
                           >
                             <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg group-hover:bg-purple-200 dark:group-hover:bg-purple-900/50 transition-colors duration-200 flex-shrink-0">
@@ -379,10 +381,9 @@ const Navbar = () => {
                             </div>
                           </Link>
                         )}
-
                         <button
                           onClick={handleLogout}
-                          className="flex items-center space-x-4 w-full px-6 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-700 dark:hover:text-red-300 transition-all duration-200 group"
+                          className="flex items-center space-x-4 w-full px-6 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-200 group"
                         >
                           <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-lg group-hover:bg-red-200 dark:group-hover:bg-red-900/50 transition-colors duration-200 flex-shrink-0">
                             <FiLogOut className="w-4 h-4 text-red-600 dark:text-red-400" />
@@ -403,7 +404,7 @@ const Navbar = () => {
               <div className="flex items-center space-x-3">
                 <Link
                   to="/login"
-                  className="text-slate-700 dark:text-slate-300 hover:text-blue-700 dark:hover:text-blue-300 font-semibold text-sm px-4 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all duration-200"
+                  className="text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 font-semibold text-sm px-4 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all duration-200"
                 >
                   Login
                 </Link>
@@ -428,7 +429,7 @@ const Navbar = () => {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={toggleTheme}
-              className="p-2.5 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-800 dark:hover:text-slate-200 transition-all duration-200"
+              className="p-2.5 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-300 transition-all duration-200"
               aria-label="Toggle theme"
             >
               {isDark ? (
@@ -442,7 +443,7 @@ const Navbar = () => {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => setIsOpen(!isOpen)}
-              className="p-2.5 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-800 dark:hover:text-slate-200 transition-all duration-200"
+              className="p-2.5 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-300 transition-all duration-200"
               aria-label="Toggle menu"
             >
               {isOpen ? (
@@ -461,10 +462,10 @@ const Navbar = () => {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.2, ease: "easeInOut" }}
-              className="md:hidden border-t  border-slate-200/50 dark:border-slate-700/50 bg-white/95 dark:bg-slate-900/95 backdrop-blur-lg relative z-50"
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+              className="md:hidden border-t border-slate-200/50 dark:border-slate-700/50 bg-white/95 dark:bg-slate-900/95 backdrop-blur-lg relative z-50"
             >
-              <div className="px-4 py-6 space-y-4 ">
+              <div className="px-4 py-6 space-y-4">
                 {/* Navigation Links */}
                 <div className="space-y-2">
                   {navLinks.map((link) => (
@@ -473,8 +474,8 @@ const Navbar = () => {
                       to={link.path}
                       className={`flex items-center space-x-3 px-4 py-3 rounded-xl text-base font-medium transition-all duration-200 ${
                         isActive(link.path)
-                          ? "text-blue-700 dark:text-blue-300 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 border border-blue-200/50 dark:border-blue-700/50 shadow-sm"
-                          : "text-slate-700 dark:text-slate-300 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-slate-50 dark:hover:bg-slate-800/50"
+                          ? "text-blue-600 dark:text-blue-400 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 border border-blue-200/50 dark:border-blue-700/50 shadow-sm"
+                          : "text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-slate-800/50"
                       }`}
                       onClick={() => setIsOpen(false)}
                     >
@@ -482,81 +483,146 @@ const Navbar = () => {
                       <span>{link.label}</span>
                     </Link>
                   ))}
-                  {user?.isAdmin && (
+                  {user.isAdmin && (
                     <Link
                       to="/chatbot"
-                      className="text-slate-700 dark:text-slate-300 flex justify-center ms-1 items-center space-x-3 px-4 py-3 rounded-xl text-base font-medium transition-all duration-200 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-slate-50 dark:hover:bg-slate-800/50"
+                      className="flex items-center space-x-3 px-4 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-all duration-200 rounded-xl"
                       onClick={() => setIsOpen(false)}
                     >
-                      <FiSettings className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                      <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex-shrink-0">
+                        <FiSettings className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                      </div>
                       <div className="flex-1">
-                        <span className="font-semibold block">Chatbot</span>
+                        <span className="font-medium block">chatbot</span>
                       </div>
                     </Link>
                   )}
                 </div>
+
                 {/* User Profile Section for Mobile */}
-                <div className="pt-4 border-t  border-slate-400 dark:border-slate-700/50">
-                  {/* User Info Header */}
-
-                  {/* Progress Section */}
-
-                  {/* Menu Items */}
-                  <div className="space-y-1">
-                    <Link
-                      to="/profile"
-                      className="flex items-center space-x-3 px-4 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-slate-100 transition-all duration-200 rounded-xl"
-                      onClick={() => setIsOpen(false)}
-                    >
-                      <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex-shrink-0">
-                        <FiUser className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                {user && (
+                  <div className="pt-4 border-t border-slate-200/50 dark:border-slate-700/50">
+                    {/* User Info Header */}
+                    <div className="px-4 py-4 bg-gradient-to-r from-blue-50/50 to-indigo-50/50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl mb-4">
+                      <div className="flex items-start space-x-4">
+                        <div className="relative flex-shrink-0">
+                          <img
+                            src={
+                              avatar || "/placeholder.svg?height=48&width=48"
+                            }
+                            alt={user.displayName || "User"}
+                            className="w-12 h-12 rounded-full border-3 border-blue-500/30 shadow-lg object-cover"
+                          />
+                          <div className="absolute -bottom-1 -right-1 bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-xs rounded-full h-6 w-6 flex items-center justify-center font-bold shadow-lg">
+                            {totalSolved > 99 ? "99+" : totalSolved}
+                          </div>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between mb-1">
+                            <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 truncate pr-2">
+                              {user.displayName || user.email || "User"}
+                            </h3>
+                            {user.isAdmin && (
+                              <span className="inline-flex items-center px-2 py-0.5 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs rounded-full font-medium flex-shrink-0">
+                                <FiShield className="w-2.5 h-2.5 mr-0.5" />
+                                Admin
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-sm text-slate-600 dark:text-slate-400 truncate mb-2">
+                            {user.email}
+                          </p>
+                          <span
+                            className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${userLevel.bg} ${userLevel.color}`}
+                          >
+                            <FiAward className="w-3 h-3 mr-1" />
+                            {userLevel.level}
+                          </span>
+                        </div>
                       </div>
-                      <div className="flex-1">
-                        <span className="font-medium block">Profile</span>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                          View your profile and stats
-                        </p>
+                    </div>
+
+                    {/* Progress Section */}
+                    <div className="px-4 py-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl mb-4">
+                      <div className="flex justify-between items-center mb-3">
+                        <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center">
+                          <FiTrendingUp className="w-4 h-4 mr-2 text-blue-500" />
+                          Progress
+                        </span>
+                        <span className="text-sm font-bold text-slate-900 dark:text-slate-100">
+                          {totalSolved}/{totalQuestions}
+                        </span>
                       </div>
-                    </Link>
-                    {user.isAdmin && (
+                      <ProgressBar
+                        solved={totalSolved}
+                        total={totalQuestions}
+                        height="h-2.5"
+                        className="mb-3"
+                      />
+                      <div className="grid grid-cols-3 gap-3"></div>
+                    </div>
+
+                    {/* Menu Items */}
+                    <div className="space-y-1">
                       <Link
-                        to="/admin"
-                        className="flex items-center space-x-3 px-4 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-slate-900 dark:hover:text-slate-100 transition-all duration-200 rounded-xl"
+                        to="/profile"
+                        className="flex items-center space-x-3 px-4 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-all duration-200 rounded-xl"
                         onClick={() => setIsOpen(false)}
                       >
-                        <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex-shrink-0">
-                          <FiSettings className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                        <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex-shrink-0">
+                          <FiUser className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                         </div>
                         <div className="flex-1">
-                          <span className="font-medium block">Admin Panel</span>
+                          <span className="font-medium block">Profile</span>
                           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                            Manage platform settings
+                            View your profile and stats
                           </p>
                         </div>
                       </Link>
-                    )}
-                    <button
-                      onClick={handleLogout}
-                      className="flex items-center space-x-3 w-full px-4 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-700 dark:hover:text-red-300 transition-all duration-200 rounded-xl"
-                    >
-                      <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-lg flex-shrink-0">
-                        <FiLogOut className="w-4 h-4 text-red-600 dark:text-red-400" />
-                      </div>
-                      <div className="flex-1 text-left">
-                        <span className="font-medium block">Logout</span>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                          Sign out of your account
-                        </p>
-                      </div>
-                    </button>
+
+                      {user.isAdmin && (
+                        <Link
+                          to="/admin"
+                          className="flex items-center space-x-3 px-4 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-all duration-200 rounded-xl"
+                          onClick={() => setIsOpen(false)}
+                        >
+                          <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex-shrink-0">
+                            <FiSettings className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                          </div>
+                          <div className="flex-1">
+                            <span className="font-medium block">
+                              Admin Panel
+                            </span>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                              Manage platform settings
+                            </p>
+                          </div>
+                        </Link>
+                      )}
+                      <button
+                        onClick={handleLogout}
+                        className="flex items-center space-x-3 w-full px-4 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-200 rounded-xl"
+                      >
+                        <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-lg flex-shrink-0">
+                          <FiLogOut className="w-4 h-4 text-red-600 dark:text-red-400" />
+                        </div>
+                        <div className="flex-1 text-left">
+                          <span className="font-medium block">Logout</span>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                            Sign out of your account
+                          </p>
+                        </div>
+                      </button>
+                    </div>
                   </div>
-                </div>
+                )}
+
                 {/* Auth Links for Non-logged in Users */}
                 {!user && (
                   <div className="pt-4 border-t border-slate-200/50 dark:border-slate-700/50 space-y-3">
                     <Link
                       to="/login"
-                      className="block px-4 py-3 rounded-xl text-base font-medium text-slate-700 dark:text-slate-300 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all duration-200"
+                      className="block px-4 py-3 rounded-xl text-base font-medium text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all duration-200"
                       onClick={() => setIsOpen(false)}
                     >
                       Login
