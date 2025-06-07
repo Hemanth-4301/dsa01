@@ -462,9 +462,9 @@ const Navbar = () => {
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.2, ease: "easeInOut" }}
-              className="md:hidden border-t border-slate-200/50 dark:border-slate-700/50 bg-white/95 dark:bg-slate-900/95 backdrop-blur-lg relative z-50"
+              className="md:hidden border-t  border-slate-200/50 dark:border-slate-700/50 bg-white/95 dark:bg-slate-900/95 backdrop-blur-lg relative z-50"
             >
-              <div className="px-4 py-6 space-y-4">
+              <div className="px-4 py-6 space-y-4 ">
                 {/* Navigation Links */}
                 <div className="space-y-2">
                   {navLinks.map((link) => (
@@ -496,7 +496,7 @@ const Navbar = () => {
                   )}
                 </div>
                 {/* User Profile Section for Mobile */}
-                <div className="pt-4 border-t  border-black dark:border-slate-700/50">
+                <div className="pt-4 border-t  border-slate-400 dark:border-slate-700/50">
                   {/* User Info Header */}
 
                   {/* Progress Section */}
