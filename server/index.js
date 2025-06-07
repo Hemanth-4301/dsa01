@@ -32,6 +32,11 @@ app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
 
 // Routes
+
+app.get("/keep-alive", (req, res) => {
+  res.send("Server is awake!");
+});
+
 app.use("/api/auth", authRoutes);
 app.use("/api/questions", questionRoutes);
 app.use("/api/progress", progressRoutes);

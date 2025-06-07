@@ -3,6 +3,16 @@ import { useState, useRef, useEffect } from "react";
 import { marked } from "marked";
 import hljs from "highlight.js";
 import "highlight.js/styles/atom-one-dark.css";
+import {
+  Copy,
+  Send,
+  Bot,
+  Loader2,
+  Volume2,
+  VolumeX,
+  Mic,
+  Plus,
+} from "lucide-react";
 
 // Configure marked to use highlight.js for code blocks
 marked.setOptions({
@@ -184,6 +194,16 @@ const Chatbot: React.FC = () => {
     }
   };
 
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    const toast = document.createElement("div");
+    toast.textContent = "Copied to clipboard!";
+    toast.className =
+      "fixed bottom-4 right-4 bg-gradient-to-r from-purple-500/90 to-pink-500/90 text-white px-4 py-2 rounded-xl shadow-lg z-50 backdrop-blur-sm border border-white/20";
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 2000);
+  };
+
   const toggleSpeech = (message: Message) => {
     if (isSpeaking && speechMessageId === message.id) {
       speechSynthesis.cancel();
@@ -245,7 +265,18 @@ const Chatbot: React.FC = () => {
     let lastIndex = 0;
 
     // Replace \r\n or \r with \n for consistent newline handling
-    const normalizedContent = content.replace(/\r\n|\r/g, "\n");
+    let normalizedContent = content.replace(/\r\n|\r/g, "\n");
+
+    // Handle unclosed code blocks by appending closing backticks
+    if (normalizedContent.includes("```")) {
+      const lastOpen = normalizedContent.lastIndexOf("```");
+      if (
+        lastOpen !== -1 &&
+        !normalizedContent.slice(lastOpen).includes("```", 3)
+      ) {
+        normalizedContent += "\n```";
+      }
+    }
 
     let match;
     while ((match = codeBlockRegex.exec(normalizedContent)) !== null) {
@@ -298,6 +329,13 @@ const Chatbot: React.FC = () => {
                   <span className="font-medium">
                     {block.language || "code"}
                   </span>
+                  <button
+                    onClick={() => copyToClipboard(block.content)}
+                    className="flex items-center gap-2 hover:text-white transition-colors duration-200 px-2 py-1 rounded-lg hover:bg-white/10"
+                  >
+                    <Copy className="w-4 h-4" />
+                    <span className="hidden sm:inline">Copy</span>
+                  </button>
                 </div>
                 <pre className="m-0 p-3 sm:p-4 bg-black rounded-b-xl overflow-x-auto border-x border-b border-slate-700/50">
                   <code
@@ -339,9 +377,7 @@ const Chatbot: React.FC = () => {
       <div className="relative z-10 flex items-center justify-between p-3 sm:p-4 bg-gradient-to-r from-white/25 via-white/20 to-white/25 dark:from-gray-900/40 dark:via-gray-800/40 dark:to-gray-900/40 backdrop-blur-xl border-b border-white/30 dark:border-white/20">
         <div className="flex items-center gap-2 sm:gap-3">
           <div className="p-2 sm:p-3 rounded-xl sm:rounded-2xl bg-gradient-to-br from-violet-500/30 to-purple-600/30 backdrop-blur-sm border border-white/30 shadow-lg">
-            <span className="w-5 h-5 sm:w-6 sm:h-6 text-violet-700 dark:text-violet-300 animate-bounce-slow">
-              AI
-            </span>
+            <Bot className="w-5 h-5 sm:w-6 sm:h-6 text-violet-700 dark:text-violet-300 animate-bounce-slow" />
           </div>
           <div>
             <h2 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-violet-700 to-purple-700 dark:from-violet-300 dark:to-purple-300 bg-clip-text text-transparent">
@@ -357,7 +393,7 @@ const Chatbot: React.FC = () => {
           className="px-3 py-2 sm:px-4 sm:py-2 rounded-xl flex items-center gap-2 bg-gradient-to-r from-violet-500/80 to-purple-600/80 text-white text-sm hover:from-violet-600/90 hover:to-purple-700/90 transition-all duration-300 backdrop-blur-sm shadow-lg border border-white/20 hover:scale-105"
           title="New Conversation"
         >
-          <span className="w-4 h-4">+</span>
+          <Plus className="w-4 h-4" />
           <span className="hidden sm:inline">New Chat</span>
         </button>
       </div>
@@ -367,9 +403,7 @@ const Chatbot: React.FC = () => {
         {messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-gray-700 dark:text-gray-200 p-4 sm:p-6">
             <div className="w-16 h-16 sm:w-20 sm:h-20 mb-4 sm:mb-6 flex items-center justify-center bg-gradient-to-br from-violet-400/30 to-purple-500/30 rounded-2xl sm:rounded-3xl shadow-xl backdrop-blur-sm border border-white/30">
-              <span className="w-8 h-8 sm:w-10 sm:h-10 text-violet-700 dark:text-violet-300 animate-bounce-slow">
-                AI
-              </span>
+              <Bot className="w-8 h-8 sm:w-10 sm:h-10 text-violet-700 dark:text-violet-300 animate-bounce-slow" />
             </div>
             <h3 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-violet-700 to-purple-700 dark:from-violet-300 dark:to-purple-300 bg-clip-text text-transparent mb-2 sm:mb-3 text-center">
               How can I help you today?
@@ -436,11 +470,9 @@ const Chatbot: React.FC = () => {
                           }
                         >
                           {isSpeaking && speechMessageId === message.id ? (
-                            <span className="w-3.5 h-3.5 sm:w-4 sm:h-4">X</span>
+                            <VolumeX className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                           ) : (
-                            <span className="w-3.5 h-3.5 sm:w-4 sm:h-4">
-                              🔊
-                            </span>
+                            <Volume2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                           )}
                         </button>
                       )}
@@ -457,9 +489,7 @@ const Chatbot: React.FC = () => {
             <div className="w-full rounded-xl sm:rounded-2xl p-3 sm:p-4 bg-gradient-to-br from-white/40 to-white/30 dark:from-gray-800/60 dark:to-gray-700/60 backdrop-blur-sm border border-white/40 dark:border-white/20 shadow-lg">
               <div className="flex items-center gap-3 sm:gap-4">
                 <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center bg-gradient-to-br from-violet-400/30 to-purple-500/30">
-                  <span className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-violet-700 dark:text-violet-300">
-                    AI
-                  </span>
+                  <Bot className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-violet-700 dark:text-violet-300" />
                 </div>
                 <div className="flex space-x-2">
                   <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 bg-violet-500 rounded-full animate-bounce"></div>
@@ -522,7 +552,7 @@ const Chatbot: React.FC = () => {
               }`}
               title={isListening ? "Stop listening" : "Voice input"}
             >
-              <span className="w-4 h-4 sm:w-5 sm:h-5">🎤</span>
+              <Mic className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
             <button
               type="submit"
@@ -530,9 +560,9 @@ const Chatbot: React.FC = () => {
               className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-gradient-to-r from-violet-500 to-purple-600 text-white hover:from-violet-600 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-500 dark:disabled:from-gray-600 dark:disabled:to-gray-700 disabled:cursor-not-allowed transition-all duration-300 backdrop-blur-sm shadow-lg hover:shadow-xl hover:scale-105 disabled:hover:scale-100"
             >
               {isLoading ? (
-                <span className="w-4 h-4 sm:w-5 sm:h-5 animate-spin">⟳</span>
+                <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
               ) : (
-                <span className="w-4 h-4 sm:w-5 sm:h-5">➤</span>
+                <Send className="w-4 h-4 sm:w-5 sm:h-5" />
               )}
             </button>
           </div>
@@ -556,7 +586,7 @@ const Chatbot: React.FC = () => {
               onClick={stopAllSpeech}
               className="text-xs flex items-center gap-1 sm:gap-2 text-red-500 hover:text-red-600 px-2 sm:px-3 py-1 rounded-full bg-white/30 dark:bg-gray-700/30 hover:bg-white/40 dark:hover:bg-gray-600/40 transition-all duration-200"
             >
-              <span className="w-3 h-3">X</span>
+              <VolumeX className="w-3 h-3" />
               Stop reading
             </button>
           )}
