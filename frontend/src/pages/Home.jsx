@@ -35,12 +35,7 @@ const codeExamples = [
     spaceComplexity: "O(n)",
     category: "Hash Table",
     code: `def two_sum(nums, target):
-    """
-    Find two numbers that add up to target
-    Time: O(n), Space: O(n)
-    """
     seen = {}
-    
     for i, num in enumerate(nums):
         complement = target - num
         
@@ -49,13 +44,7 @@ const codeExamples = [
         
         seen[num] = i
     
-    return []
-
-# Example usage
-nums = [2, 7, 11, 15]
-target = 9
-result = two_sum(nums, target)
-print(f"Indices: {result}")  # Output: [0, 1]`,
+    return []`,
   },
   {
     title: "Generate Parentheses",
@@ -65,33 +54,20 @@ print(f"Indices: {result}")  # Output: [0, 1]`,
     spaceComplexity: "O(4^n / √n)",
     category: "Backtracking",
     code: `def generate_parentheses(n):
-    """
-    Generate all valid parentheses combinations
-    Time: O(4^n / sqrt(n)), Space: O(4^n / sqrt(n))
-    """
     result = []
     
     def backtrack(current, open_count, close_count):
-        # Base case: valid combination found
         if len(current) == 2 * n:
             result.append(current)
             return
-        
-        # Add opening parenthesis
         if open_count < n:
             backtrack(current + "(", open_count + 1, close_count)
         
-        # Add closing parenthesis
         if close_count < open_count:
             backtrack(current + ")", open_count, close_count + 1)
     
     backtrack("", 0, 0)
-    return result
-
-# Example usage
-n = 3
-combinations = generate_parentheses(n)
-print(combinations)`,
+    return result`,
   },
   {
     title: "Binary Tree Inorder",
@@ -107,10 +83,6 @@ print(combinations)`,
         self.right = right
 
 def inorder_traversal(root):
-    """
-    Inorder traversal: Left -> Root -> Right
-    Time: O(n), Space: O(h) where h is height
-    """
     result = []
     
     def inorder(node):
@@ -122,11 +94,7 @@ def inorder_traversal(root):
         inorder(node.right)  # Visit right subtree
     
     inorder(root)
-    return result
-
-# Example usage
-root = TreeNode(1, None, TreeNode(2, TreeNode(3), None))
-print(inorder_traversal(root))  # Output: [1, 3, 2]`,
+    return result`,
   },
 ];
 

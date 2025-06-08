@@ -23,7 +23,7 @@ const transporter = nodemailer.createTransport({
 // Rate limiting for auth routes
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5,
+  max: 8,
   message: {
     error: {
       message: "Too many authentication attempts, please try again later",
@@ -99,7 +99,7 @@ router.post(
 
       // Generate OTP
       const otp = generateOTP();
-      const otpExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+      const otpExpires = new Date(Date.now() + 60 * 1000); // 1 minute
 
       // Create user
       const user = new User({
@@ -118,46 +118,38 @@ router.post(
       const mailOptions = {
         from: process.env.EMAIL_USER,
         to: email,
-        subject: "Verify Your Email Address(dsa01)",
+        subject: "Verify Your Email Address (dsa01)",
         html: `
           <div style="font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: auto; padding: 0; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-  <!-- Header with gradient -->
-  <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px 20px; text-align: center;">
-    <h1 style="color: white; margin: 0; font-size: 28px; font-weight: 600;">Welcome to dsa01, ${name}!</h1>
-  </div>
-  
-  <!-- Content area -->
-  <div style="padding: 30px 20px; background: #ffffff; line-height: 1.6; color: #333;">
-    <p style="font-size: 16px; margin-bottom: 25px;">Thank you for joining us! Please use the following otp to verify:</p>
-    
-    <!-- OTP Display Card -->
-    <div style="background: #f8f9fa; border-left: 4px solid #667eea; padding: 15px; margin: 20px 0; border-radius: 0 4px 4px 0;">
-      <p style="margin: 0 0 8px 0; font-size: 14px; color: #666;">Your One-Time Password</p>
-      <div style="display: flex; justify-content: space-between; align-items: center;">
-        <h2 style="margin: 0; font-size: 28px; letter-spacing: 3px; color: #222;">${otp}</h2>
-      </div>
-    </div>
-    
-    <p style="font-size: 14px; color: #666; margin-bottom: 25px;">
-      <svg style="vertical-align: middle; margin-right: 6px;" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#667eea" stroke-width="2">
-        <circle cx="12" cy="12" r="10"></circle>
-        <line x1="12" y1="8" x2="12" y2="12"></line>
-        <line x1="12" y1="16" x2="12.01" y2="16"></line>
-      </svg>
-      This OTP is valid for <strong>24 hours</strong>. Please don't share it with anyone.
-    </p>
-    
-    <div style="border-top: 1px solid #eee; padding-top: 20px; margin-top: 20px;">
-      <p style="font-size: 13px; color: #888; margin-bottom: 5px;">Didn't request this email?</p>
-      <p style="font-size: 13px; color: #888; margin: 0;">You can safely ignore it. Your account is secure.</p>
-    </div>
-  </div>
-  
-  <!-- Footer -->
-  <div style="background: #f8f9fa; padding: 15px 20px; text-align: center; font-size: 12px; color: #888;">
-    <p style="margin: 0;">© ${new Date().getFullYear()} Our Platform. All rights reserved.</p>
-  </div>
-</div>
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px 20px; text-align: center;">
+              <h1 style="color: white; margin: 0; font-size: 28px; font-weight: 600;">Welcome to dsa01, ${name}!</h1>
+            </div>
+            <div style="padding: 30px 20px; background: #ffffff; line-height: 1.6; color: #333;">
+              <p style="font-size: 16px; margin-bottom: 25px;">Thank you for joining us! Please use the following OTP to verify your email address within <strong>1 minute</strong>:</p>
+              <div style="background: #f8f9fa; border-left: 4px solid #667eea; padding: 15px; margin: 20px 0; border-radius: 0 4px 4px 0;">
+                <p style="margin: 0 0 8px 0; font-size: 14px; color: #666;">Your One-Time Password</p>
+                <h2 style="margin: 0; font-size: 28px; letter-spacing: 3px; color: #222;">${otp}</h2>
+              </div>
+              <p style="font-size: 14px; color: #666; margin-bottom: 25px;">
+                <svg style="vertical-align: middle; margin-right: 6px;" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#667eea" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="8" x2="12" y2="12"></line>
+                  <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+                This OTP is valid for <strong>1 minute</strong>. Please don't share it with anyone.
+              </p>
+              <p style="font-size: 14px; color: #666; margin-bottom: 25px;">
+                Can't find the email? Please check your <strong>spam or junk</strong> folder.
+              </p>
+              <div style="border-top: 1px solid #eee; padding-top: 20px; margin-top: 20px;">
+                <p style="font-size: 13px; color: #888; margin-bottom: 5px;">Didn't request this email?</p>
+                <p style="font-size: 13px; color: #888; margin: 0;">You can safely ignore it. Your account is secure.</p>
+              </div>
+            </div>
+            <div style="background: #f8f9fa; padding: 15px 20px; text-align: center; font-size: 12px; color: #888;">
+              <p style="margin: 0;">© ${new Date().getFullYear()} dsa01. All rights reserved.</p>
+            </div>
+          </div>
         `,
       };
 
@@ -165,7 +157,7 @@ router.post(
 
       res.status(201).json({
         message:
-          "User created successfully. Please verify your email with the OTP sent.This email might be there in spam folder please checkout there once",
+          "User created successfully. Please verify your email with the OTP sent. Check your spam folder as well for OTP.",
         userId: user._id,
       });
     } catch (error) {
@@ -223,20 +215,19 @@ router.post(
       }
 
       if (user.otp !== otp || user.otpExpires < Date.now()) {
+        await User.findByIdAndDelete(userId);
         return res.status(400).json({
           error: {
-            message: "Invalid or expired OTP",
+            message: "Invalid or expired OTP. Account deleted.",
             code: "INVALID_OTP",
           },
         });
       }
 
-      // Verify user
       user.isVerified = true;
       user.otp = undefined;
       user.otpExpires = undefined;
 
-      // Generate tokens
       const { accessToken, refreshToken } = generateTokens(user._id);
       user.refreshToken = refreshToken;
       await user.save();
@@ -297,31 +288,49 @@ router.post(
         });
       }
 
-      // Generate new OTP
       const otp = generateOTP();
-      const otpExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+      const otpExpires = new Date(Date.now() + 60 * 1000); // 1 minute
 
       user.otp = otp;
       user.otpExpires = otpExpires;
       await user.save();
 
-      // Send OTP email
       const mailOptions = {
         from: process.env.EMAIL_USER,
         to: user.email,
-        subject: "Verify Your Email Address",
+        subject: "Verify Your Email Address (dsa01)",
         html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px;">
-            <h2>Welcome to Our Platform, ${user.name}!</h2>
-            <p>Please use the following OTP to verify your email address:</p>
-            <h3 style="font-size: 24px; color: #333;">${otp}</h3>
-            <button onclick="navigator.clipboard.writeText('${otp}'); alert('OTP copied to clipboard!');" 
-                    style="background-color: #4CAF50; color: white; padding: 10px 20px; border: none; 
-                           border-radius: 5px; cursor: pointer; margin: 10px 0;">
-              Copy OTP
-            </button>
-            <p>This OTP is valid for 24 hours.</p>
-            <p>If you didn't request this, please ignore this email.</p>
+          <div style="font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: auto; padding: 0; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px 20px; text-align: center;">
+              <h1 style="color: white; margin: 0; font-size: 28px; font-weight: 600;">Welcome to dsa01, ${
+                user.name
+              }!</h1>
+            </div>
+            <div style="padding: 30px 20px; background: #ffffff; line-height: 1.6; color: #333;">
+              <p style="font-size: 16px; margin-bottom: 25px;">Please use the following OTP to verify your email address within <strong>1 minute</strong>:</p>
+              <div style="background: #f8f9fa; border-left: 4px solid #667eea; padding: 15px; margin: 20px 0; border-radius: 0 4px 4px 0;">
+                <p style="margin: 0 0 8px 0; font-size: 14px; color: #666;">Your One-Time Password</p>
+                <h2 style="margin: 0; font-size: 28px; letter-spacing: 3px; color: #222;">${otp}</h2>
+              </div>
+              <p style="font-size: 14px; color: #666; margin-bottom: 25px;">
+                <svg style="vertical-align: middle; margin-right: 6px;" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#667eea" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="8" x2="12" y2="12"></line>
+                  <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+                This OTP is valid for <strong>1 minute</strong>. Please don't share it with anyone.
+              </p>
+              <p style="font-size: 14px; color: #666; margin-bottom: 25px;">
+                Can't find the email? Please check your <strong>spam or junk</strong> folder.
+              </p>
+              <div style="border-top: 1px solid #eee; padding-top: 20px; margin-top: 20px;">
+                <p style="font-size: 13px; color: #888; margin-bottom: 5px;">Didn't request this email?</p>
+                <p style="font-size: 13px; color: #888; margin: 0;">You can safely ignore it. Your account is secure.</p>
+              </div>
+            </div>
+            <div style="background: #f8f9fa; padding: 15px 20px; text-align: center; font-size: 12px; color: #888;">
+              <p style="margin: 0;">© ${new Date().getFullYear()} dsa01. All rights reserved.</p>
+            </div>
           </div>
         `,
       };
@@ -333,6 +342,369 @@ router.post(
       });
     } catch (error) {
       console.error("Resend OTP error:", error);
+      res.status(500).json({
+        error: {
+          message: "Internal server error",
+          code: "INTERNAL_ERROR",
+        },
+      });
+    }
+  }
+);
+
+// Request Password Reset
+router.post(
+  "/forgot-password",
+  [authLimiter, body("email").isEmail().normalizeEmail()],
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({
+          error: {
+            message: "Validation failed",
+            code: "VALIDATION_ERROR",
+            details: errors.array(),
+          },
+        });
+      }
+
+      const { email } = req.body;
+      const user = await User.findOne({ email, authProvider: "email" });
+
+      if (!user || !user.isActive || !user.isVerified) {
+        return res.status(404).json({
+          error: {
+            message: "User not found or not verified",
+            code: "USER_NOT_FOUND",
+          },
+        });
+      }
+
+      const otp = generateOTP();
+      const otpExpires = new Date(Date.now() + 2 * 60 * 1000); // 2 minutes
+
+      user.resetPasswordOTP = otp;
+      user.resetPasswordExpires = otpExpires;
+      await user.save();
+
+      const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: email,
+        subject: "Password Reset OTP (dsa01)",
+        html: `
+          <div style="font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: auto; padding: 0; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px 20px; text-align: center;">
+              <h1 style="color: white; margin: 0; font-size: 28px; font-weight: 600;">Password Reset Request</h1>
+            </div>
+            <div style="padding: 30px 20px; background: #ffffff; line-height: 1.6; color: #333;">
+              <p style="font-size: 16px; margin-bottom: 25px;">You requested to reset your password. Please use the following OTP within <strong>2 minutes</strong> to proceed:</p>
+              <div style="background: #f8f9fa; border-left: 4px solid #667eea; padding: 15px; margin: 20px 0; border-radius: 0 4px 4px 0;">
+                <p style="margin: 0 0 8px 0; font-size: 14px; color: #666;">Your One-Time Password</p>
+                <h2 style="margin: 0; font-size: 28px; letter-spacing: 3px; color: #222;">${otp}</h2>
+              </div>
+              <p style="font-size: 14px; color: #666; margin-bottom: 25px;">
+                <svg style="vertical-align: middle; margin-right: 6px;" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#667eea" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="8" x2="12" y2="12"></line>
+                  <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+                This OTP is valid for <strong>2 minutes</strong>. Please don't share it with anyone.
+              </p>
+              <p style="font-size: 14px; color: #666; margin-bottom: 25px;">
+                Can't find the email? Please check your <strong>spam or junk</strong> folder.
+              </p>
+              <div style="border-top: 1px solid #eee; padding-top: 20px; margin-top: 20px;">
+                <p style="font-size: 13px; color: #888; margin-bottom: 5px;">Didn't request this email?</p>
+                <p style="font-size: 13px; color: #888; margin: 0;">You can safely ignore it. Your account is secure.</p>
+              </div>
+            </div>
+            <div style="background: #f8f9fa; padding: 15px 20px; text-align: center; font-size: 12px; color: #888;">
+              <p style="margin: 0;">© ${new Date().getFullYear()} dsa01. All rights reserved.</p>
+            </div>
+          </div>
+        `,
+      };
+
+      await transporter.sendMail(mailOptions);
+
+      res.json({
+        message: "Password reset OTP sent successfully",
+      });
+    } catch (error) {
+      console.error("Forgot password error:", error);
+      res.status(500).json({
+        error: {
+          message: "Internal server error",
+          code: "INTERNAL_ERROR",
+        },
+      });
+    }
+  }
+);
+
+// Verify Password Reset OTP
+router.post(
+  "/verify-reset-otp",
+  [
+    otpLimiter,
+    body("email").isEmail().normalizeEmail(),
+    body("otp").isLength({ min: 6, max: 6 }),
+  ],
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({
+          error: {
+            message: "Validation failed",
+            code: "VALIDATION_ERROR",
+            details: errors.array(),
+          },
+        });
+      }
+
+      const { email, otp } = req.body;
+      const user = await User.findOne({ email, authProvider: "email" });
+
+      if (!user || !user.isActive || !user.isVerified) {
+        return res.status(404).json({
+          error: {
+            message: "User not found or not verified",
+            code: "USER_NOT_FOUND",
+          },
+        });
+      }
+
+      if (
+        user.resetPasswordOTP !== otp ||
+        user.resetPasswordExpires < Date.now()
+      ) {
+        return res.status(400).json({
+          error: {
+            message: "Invalid or expired OTP",
+            code: "INVALID_OTP",
+          },
+        });
+      }
+
+      res.json({
+        message: "OTP verified successfully",
+      });
+    } catch (error) {
+      console.error("Verify reset OTP error:", error);
+      res.status(500).json({
+        error: {
+          message: "Internal server error",
+          code: "INTERNAL_ERROR",
+        },
+      });
+    }
+  }
+);
+
+// Resend Password Reset OTP
+router.post(
+  "/resend-reset-otp",
+  [otpLimiter, body("email").isEmail().normalizeEmail()],
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({
+          error: {
+            message: "Validation failed",
+            code: "VALIDATION_ERROR",
+            details: errors.array(),
+          },
+        });
+      }
+
+      const { email } = req.body;
+      const user = await User.findOne({ email, authProvider: "email" });
+
+      if (!user || !user.isActive || !user.isVerified) {
+        return res.status(404).json({
+          error: {
+            message: "User not found or not verified",
+            code: "USER_NOT_FOUND",
+          },
+        });
+      }
+
+      const otp = generateOTP();
+      const otpExpires = new Date(Date.now() + 2 * 60 * 1000); // 2 minutes
+
+      user.resetPasswordOTP = otp;
+      user.resetPasswordExpires = otpExpires;
+      await user.save();
+
+      const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: email,
+        subject: "Password Reset OTP (dsa01)",
+        html: `
+          <div style="font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: auto; padding: 0; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px 20px; text-align: center;">
+              <h1 style="color: white; margin: 0; font-size: 28px; font-weight: 600;">Password Reset Request</h1>
+            </div>
+            <div style="padding: 30px 20px; background: #ffffff; line-height: 1.6; color: #333;">
+              <p style="font-size: 16px; margin-bottom: 25px;">You requested to reset your password. Please use the following OTP within <strong>2 minutes</strong> to proceed:</p>
+              <div style="background: #f8f9fa; border-left: 4px solid #667eea; padding: 15px; margin: 20px 0; border-radius: 0 4px 4px 0;">
+                <p style="margin: 0 0 8px 0; font-size: 14px; color: #666;">Your One-Time Password</p>
+                <h2 style="margin: 0; font-size: 28px; letter-spacing: 3px; color: #222;">${otp}</h2>
+              </div>
+              <p style="font-size: 14px; color: #666; margin-bottom: 25px;">
+                <svg style="vertical-align: middle; margin-right: 6px;" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#667eea" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="8" x2="12" y2="12"></line>
+                  <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+                This OTP is valid for <strong>2 minutes</strong>. Please don't share it with anyone.
+              </p>
+              <p style="font-size: 14px; color: #666; margin-bottom: 25px;">
+                Can't find the email? Please check your <strong>spam or junk</strong> folder.
+              </p>
+              <div style="border-top: 1px solid #eee; padding-top: 20px; margin-top: 20px;">
+                <p style="font-size: 13px; color: #888; margin-bottom: 5px;">Didn't request this email?</p>
+                <p style="font-size: 13px; color: #888; margin: 0;">You can safely ignore it. Your account is secure.</p>
+              </div>
+            </div>
+            <div style="background: #f8f9fa; padding: 15px 20px; text-align: center; font-size: 12px; color: #888;">
+              <p style="margin: 0;">© ${new Date().getFullYear()} dsa01. All rights reserved.</p>
+            </div>
+          </div>
+        `,
+      };
+
+      await transporter.sendMail(mailOptions);
+
+      res.json({
+        message: "New password reset OTP sent successfully",
+      });
+    } catch (error) {
+      console.error("Resend reset OTP error:", error);
+      res.status(500).json({
+        error: {
+          message: "Internal server error",
+          code: "INTERNAL_ERROR",
+        },
+      });
+    }
+  }
+);
+
+// Reset Password
+router.post(
+  "/reset-password",
+  [
+    authLimiter,
+    body("email").isEmail().normalizeEmail(),
+    body("otp").isLength({ min: 6, max: 6 }),
+    body("newPassword").isLength({ min: 6 }),
+  ],
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({
+          error: {
+            message: "Validation failed",
+            code: "VALIDATION_ERROR",
+            details: errors.array(),
+          },
+        });
+      }
+
+      const { email, otp, newPassword } = req.body;
+      const user = await User.findOne({ email, authProvider: "email" });
+
+      if (!user || !user.isActive || !user.isVerified) {
+        return res.status(404).json({
+          error: {
+            message: "User not found or not verified",
+            code: "USER_NOT_FOUND",
+          },
+        });
+      }
+
+      if (
+        user.resetPasswordOTP !== otp ||
+        user.resetPasswordExpires < Date.now()
+      ) {
+        return res.status(400).json({
+          error: {
+            message: "Invalid or expired OTP",
+            code: "INVALID_OTP",
+          },
+        });
+      }
+
+      user.password = newPassword;
+      user.resetPasswordOTP = undefined;
+      user.resetPasswordExpires = undefined;
+      await user.save();
+
+      res.json({
+        message: "Password reset successfully",
+      });
+    } catch (error) {
+      console.error("Reset password error:", error);
+      res.status(500).json({
+        error: {
+          message: "Internal server error",
+          code: "INTERNAL_ERROR",
+        },
+      });
+    }
+  }
+);
+
+// Delete unverified user
+router.post(
+  "/delete-unverified",
+  [body("userId").isMongoId()],
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({
+          error: {
+            message: "Validation failed",
+            code: "VALIDATION_ERROR",
+            details: errors.array(),
+          },
+        });
+      }
+
+      const { userId } = req.body;
+      const user = await User.findById(userId);
+
+      if (!user) {
+        return res.status(404).json({
+          error: {
+            message: "User not found",
+            code: "USER_NOT_FOUND",
+          },
+        });
+      }
+
+      if (user.isVerified) {
+        return res.status(400).json({
+          error: {
+            message: "User is already verified",
+            code: "ALREADY_VERIFIED",
+          },
+        });
+      }
+
+      await User.findByIdAndDelete(userId);
+
+      res.json({
+        message: "Unverified user deleted successfully",
+      });
+    } catch (error) {
+      console.error("Delete unverified user error:", error);
       res.status(500).json({
         error: {
           message: "Internal server error",
@@ -357,8 +729,8 @@ router.post(
       if (!errors.isEmpty()) {
         return res.status(400).json({
           error: {
-            message: "Validation failed",
-            code: "VALIDATION_ERROR",
+            message: "Invalid registration",
+            code: "INVALIDATION_ERROR",
             details: errors.array(),
           },
         });
@@ -366,7 +738,6 @@ router.post(
 
       const { email, password } = req.body;
 
-      // Find user
       const user = await User.findOne({ email, authProvider: "email" });
       if (!user || !user.isActive) {
         return res.status(401).json({
@@ -377,7 +748,6 @@ router.post(
         });
       }
 
-      // Check if user is verified
       if (!user.isVerified) {
         return res.status(403).json({
           error: {
@@ -387,7 +757,6 @@ router.post(
         });
       }
 
-      // Check password
       const isValidPassword = await user.comparePassword(password);
       if (!isValidPassword) {
         return res.status(401).json({
@@ -398,15 +767,12 @@ router.post(
         });
       }
 
-      // Generate tokens
       const { accessToken, refreshToken } = generateTokens(user._id);
-
-      // Save refresh token
       user.refreshToken = refreshToken;
       await user.save();
 
       res.json({
-        message: "Login successful",
+        message: "User authentication successful",
         user,
         accessToken,
         refreshToken,
@@ -415,8 +781,8 @@ router.post(
       console.error("Login error:", error);
       res.status(500).json({
         error: {
-          message: "Internal server error",
-          code: "INTERNAL_ERROR",
+          message: "Invalid server error",
+          code: "INVALID_SERVER",
         },
       });
     }
@@ -431,13 +797,12 @@ router.post("/refresh", async (req, res) => {
     if (!refreshToken) {
       return res.status(401).json({
         error: {
-          message: "Refresh token required",
-          code: "UNAUTHORIZED",
+          message: "Invalid authentication token required",
+          code: "INVALID_AUTH",
         },
       });
     }
 
-    // Verify refresh token
     const decoded = jwt.verify(refreshToken, process.env.JWT_SECRET);
     const user = await User.findById(decoded.userId);
 
@@ -448,17 +813,14 @@ router.post("/refresh", async (req, res) => {
       !user.isVerified
     ) {
       return res.status(403).json({
-        error: {
-          message: "Invalid refresh token",
-          code: "FORBIDDEN",
+        message: {
+          error: "Invalid refresh token",
+          code: "invalid",
         },
       });
     }
 
-    // Generate new tokens
     const tokens = generateTokens(user._id);
-
-    // Update refresh token
     user.refreshToken = tokens.refreshToken;
     await user.save();
 
@@ -471,7 +833,7 @@ router.post("/refresh", async (req, res) => {
     res.status(403).json({
       error: {
         message: "Invalid refresh token",
-        code: "FORBIDDEN",
+        code: "INVALID_TOKEN",
       },
     });
   }
@@ -504,14 +866,14 @@ router.post("/logout", authenticateToken, async (req, res) => {
 // Schedule cleanup of unverified accounts
 setInterval(async () => {
   try {
-    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const oneMinuteAgo = new Date(Date.now() - 60 * 1000); // 1 minute
     await User.deleteMany({
       isVerified: false,
-      createdAt: { $lt: twentyFourHoursAgo },
+      otpExpires: { $lt: oneMinuteAgo },
     });
   } catch (error) {
     console.error("Error cleaning up unverified accounts:", error);
   }
-}, 24 * 60 * 60 * 1000); // Run daily
+}, 60 * 1000); // Run every minute
 
 export default router;

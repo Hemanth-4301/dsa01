@@ -51,6 +51,14 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: null,
   },
+  resetPasswordOTP: {
+    type: String,
+    default: null,
+  },
+  resetPasswordExpires: {
+    type: Date,
+    default: null,
+  },
   refreshToken: String,
   createdAt: {
     type: Date,
@@ -83,6 +91,8 @@ userSchema.methods.toJSON = function () {
   delete userObject.refreshToken;
   delete userObject.otp;
   delete userObject.otpExpires;
+  delete userObject.resetPasswordOTP;
+  delete userObject.resetPasswordExpires;
   return userObject;
 };
 

@@ -13,7 +13,16 @@ const LoadingSpinner = ({ size = "md", className = "" }) => {
 
   return (
     <div className={`flex items-center justify-center ${className}`}>
-      <div class="loader"></div>
+      <div class="spinner-one">
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
     </div>
   );
 };

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -30,8 +30,33 @@ const Register = () => {
   const [errors, setErrors] = useState({});
   const [step, setStep] = useState("register"); // register or verify
   const [userId, setUserId] = useState(null);
-  const { register, verifyOTP, resendOTP } = useAuth();
+  const [timer, setTimer] = useState(60); // 60 seconds countdown
+  const { register, verifyOTP, resendOTP, deleteUnverifiedUser } = useAuth();
   const navigate = useNavigate();
+
+  // Timer effect for OTP verification
+  useEffect(() => {
+    if (step === "verify" && timer > 0) {
+      const countdown = setInterval(() => {
+        setTimer((prev) => prev - 1);
+      }, 1000);
+      return () => clearInterval(countdown);
+    } else if (step === "verify" && timer === 0) {
+      // Delete unverified user when timer expires
+      deleteUnverifiedUser(userId).then(() => {
+        setStep("register");
+        setFormData({
+          name: "",
+          email: "",
+          password: "",
+          confirmPassword: "",
+          otp: "",
+        });
+        setUserId(null);
+        setErrors({ timeout: "OTP expired. Please register again." });
+      });
+    }
+  }, [step, timer, userId, deleteUnverifiedUser]);
 
   const handleChange = (e) => {
     setFormData({
@@ -100,12 +125,17 @@ const Register = () => {
       if (result.success) {
         setUserId(result.userId);
         setStep("verify");
+        setTimer(60); // Reset timer on registration
+      } else {
+        setErrors({ server: result.error });
       }
     } else {
       const result = await verifyOTP(userId, formData.otp);
 
       if (result.success) {
         navigate("/");
+      } else {
+        setErrors({ otp: result.error });
       }
     }
 
@@ -115,6 +145,9 @@ const Register = () => {
   const handleResendOTP = async () => {
     setLoading(true);
     const result = await resendOTP(userId);
+    if (result.success) {
+      setTimer(60); // Reset timer on resend
+    }
     setLoading(false);
   };
 
@@ -438,6 +471,16 @@ const Register = () => {
                     </motion.p>
                   )}
                 </motion.div>
+                {errors.server && (
+                  <motion.p
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mt-2 text-sm text-red-600 dark:text-red-400 flex items-center"
+                  >
+                    <AlertCircle className="w-4 h-4 mr-1 flex-shrink-0" />
+                    {errors.server}
+                  </motion.p>
+                )}
               </>
             ) : (
               <motion.div variants={itemVariants}>
@@ -465,6 +508,20 @@ const Register = () => {
                   />
                   <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-purple-500/0 via-indigo-500/0 to-blue-500/0 group-focus-within:from-purple-500/5 group-focus-within:via-indigo-500/5 group-focus-within:to-blue-500/5 transition-all duration-300 pointer-events-none"></div>
                 </div>
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="mt-2 text-sm text-slate-600 dark:text-slate-400"
+                >
+                  Check your spam folder as well for OTP.
+                </motion.p>
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="mt-2 text-sm text-slate-600 dark:text-slate-400"
+                >
+                  Time remaining: {timer} seconds
+                </motion.p>
                 {errors.otp && (
                   <motion.p
                     initial={{ opacity: 0, y: -10 }}
@@ -473,6 +530,16 @@ const Register = () => {
                   >
                     <AlertCircle className="w-4 h-4 mr-1 flex-shrink-0" />
                     {errors.otp}
+                  </motion.p>
+                )}
+                {errors.timeout && (
+                  <motion.p
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mt-2 text-sm text-red-600 dark:text-red-400 flex items-center"
+                  >
+                    <AlertCircle className="w-4 h-4 mr-1 flex-shrink-0" />
+                    {errors.timeout}
                   </motion.p>
                 )}
                 <motion.button

@@ -164,6 +164,74 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const requestPasswordReset = async (email) => {
+    try {
+      await axios.post("/api/auth/forgot-password", { email });
+      toast.success("Password reset OTP sent to your email!");
+      return { success: true };
+    } catch (error) {
+      const message =
+        error.response?.data?.error?.message || "Failed to send reset OTP";
+      toast.error(message);
+      return { success: false, error: message };
+    }
+  };
+
+  const verifyResetOTP = async (email, otp) => {
+    try {
+      await axios.post("/api/auth/verify-reset-otp", { email, otp });
+      toast.success("OTP verified successfully!");
+      return { success: true };
+    } catch (error) {
+      const message =
+        error.response?.data?.error?.message || "OTP verification failed";
+      toast.error(message);
+      return { success: false, error: message };
+    }
+  };
+
+  const resendResetOTP = async (email) => {
+    try {
+      await axios.post("/api/auth/resend-reset-otp", { email });
+      toast.success("New OTP sent successfully!");
+      return { success: true };
+    } catch (error) {
+      const message =
+        error.response?.data?.error?.message || "Failed to resend OTP";
+      toast.error(message);
+      return { success: false, error: message };
+    }
+  };
+
+  const resetPassword = async (email, otp, newPassword) => {
+    try {
+      await axios.post("/api/auth/reset-password", { email, otp, newPassword });
+      toast.success(
+        "Password reset successfully! Please login with your new password."
+      );
+      return { success: true };
+    } catch (error) {
+      const message =
+        error.response?.data?.error?.message || "Failed to reset password";
+      toast.error(message);
+      return { success: false, error: message };
+    }
+  };
+
+  const deleteUnverifiedUser = async (userId) => {
+    try {
+      await axios.post("/api/auth/delete-unverified", { userId });
+      toast.info("Unverified account deleted due to OTP expiration.");
+      return { success: true };
+    } catch (error) {
+      const message =
+        error.response?.data?.error?.message ||
+        "Failed to delete unverified account";
+      toast.error(message);
+      return { success: false, error: message };
+    }
+  };
+
   const adminLogin = async (email, password) => {
     try {
       const response = await axios.post("/api/admin/login", {
@@ -207,6 +275,11 @@ export const AuthProvider = ({ children }) => {
     register,
     verifyOTP,
     resendOTP,
+    requestPasswordReset,
+    verifyResetOTP,
+    resendResetOTP,
+    resetPassword,
+    deleteUnverifiedUser,
     adminLogin,
     logout,
   };
