@@ -1,21 +1,22 @@
 import User from "../models/User.js";
 import Question from "../models/Question.js";
-// import { arrayQuestions } from "./data/arrays.js";
-// import { twoPointerQuestions } from "./data/twoPointer.js";
-// import { slidingWindowQuestions } from "./data/slidingWindow.js";
-// import { linkedListQuestions } from "./data/linkedList.js";
-// import { stringsQuestions } from "./data/string.js";
-// import { heapQuestions } from "./data/heap.js";
-// import { stackQuestions } from "./data/stack.js";
-// import { backtrackingQuestions } from "./data/backtracking.js";
-// import { dp1dQuestions } from "./data/dp1.js";
-// import { dp2dQuestions } from "./data/dp2.js";
-// import { treeQuestions } from "./data/tree.js";
-// import { graphQuestions } from "./data/graph.js";
-// import { bitQuestions } from "./data/bit.js";
-// import { trieQuestions } from "./data/trie.js";
-// import { greedyQuestions } from "./data/greedy.js";
-// import { matrixQuestions } from "./data/matrix.js";
+import { arrayQuestions } from "./data/arrays.js";
+import { twoPointerQuestions } from "./data/twoPointer.js";
+import { slidingWindowQuestions } from "./data/slidingWindow.js";
+import { binarySearchQuestions } from "./data/binarySearch.js";
+import { linkedListQuestions } from "./data/linkedList.js";
+import { stringsQuestions } from "./data/string.js";
+import { heapQuestions } from "./data/heap.js";
+import { stackQuestions } from "./data/stack.js";
+import { backtrackingQuestions } from "./data/backtracking.js";
+import { dp1dQuestions } from "./data/dp1.js";
+import { dp2dQuestions } from "./data/dp2.js";
+import { treeQuestions } from "./data/tree.js";
+import { graphQuestions } from "./data/graph.js";
+import { bitQuestions } from "./data/bit.js";
+import { trieQuestions } from "./data/trie.js";
+import { greedyQuestions } from "./data/greedy.js";
+import { matrixQuestions } from "./data/matrix.js";
 
 export const seedAdmin = async () => {
   try {
@@ -47,24 +48,25 @@ export const seedQuestions = async () => {
       console.log("Questions already exist, skipping seed");
       return;
     }
-    const sampleQuestions = []
-    //   ...arrayQuestions,
-    //   ...twoPointerQuestions,
-    //   ...slidingWindowQuestions,
-    //   ...linkedListQuestions,
-    //   ...stringsQuestions,
-    //   ...stackQuestions,
-    //   ...heapQuestions,
-    //   ...backtrackingQuestions,
-    //   ...treeQuestions,
-    //   ...graphQuestions,
-    //   ...bitQuestions,
-    //   ...trieQuestions,
-    //   ...greedyQuestions,
-    //   ...matrixQuestions,
-    //   ...dp1dQuestions,
-    //   ...dp2dQuestions,
-    // ];
+    const sampleQuestions = [
+      ...arrayQuestions,
+      ...twoPointerQuestions,
+      ...slidingWindowQuestions,
+      ...binarySearchQuestions,
+      ...linkedListQuestions,
+      ...stringsQuestions,
+      ...stackQuestions,
+      ...heapQuestions,
+      ...backtrackingQuestions,
+      ...treeQuestions,
+      ...graphQuestions,
+      ...bitQuestions,
+      ...trieQuestions,
+      ...greedyQuestions,
+      ...matrixQuestions,
+      ...dp1dQuestions,
+      ...dp2dQuestions,
+    ];
 
     await Question.insertMany(sampleQuestions);
     console.log(`Seeded ${sampleQuestions.length} questions`);

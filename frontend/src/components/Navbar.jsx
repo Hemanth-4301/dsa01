@@ -14,10 +14,8 @@ import {
   FiSettings,
   FiTrendingUp,
   FiAward,
-  FiTarget,
-  FiStar,
-  FiChevronDown,
   FiShield,
+  FiChevronDown,
 } from "react-icons/fi";
 import { useAuth } from "../contexts/AuthContext";
 import { useTheme } from "../contexts/ThemeContext";
@@ -89,7 +87,6 @@ const Navbar = () => {
       0
     ) || 150;
   const totalSolved = progressData?.stats?.totalSolved || 0;
-  const totalStarred = progressData?.stats?.totalStarred || 0;
 
   const handleLogout = async () => {
     await logout();
@@ -144,11 +141,11 @@ const Navbar = () => {
   // Show loading state while auth is initializing
   if (loading) {
     return (
-      <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-lg border-b border-slate-200/50 dark:border-slate-700/50 sticky top-0 z-50 shadow-sm">
+      <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 sticky top-0 z-50 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
-              dark DSA
+              dsa01
             </span>
             <div className="flex items-center space-x-2 text-slate-500 dark:text-slate-400">
               <div className="w-4 h-4 bg-slate-300 dark:bg-slate-600 rounded animate-pulse"></div>
@@ -161,7 +158,7 @@ const Navbar = () => {
   }
 
   return (
-    <nav className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-lg border-b border-slate-200/50 dark:border-slate-700/50 sticky top-0 z-50 shadow-lg">
+    <nav className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 sticky top-0 z-50 shadow-lg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Enhanced Logo */}
@@ -190,7 +187,7 @@ const Navbar = () => {
                   className={`relative px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 group ${
                     isActive(link.path)
                       ? "text-blue-600 dark:text-blue-400 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 shadow-sm"
-                      : "text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-slate-800/50"
+                      : "text-slate-800 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-slate-800"
                   }`}
                 >
                   <span className="flex items-center space-x-2">
@@ -210,18 +207,20 @@ const Navbar = () => {
                   )}
                 </Link>
               ))}
-              <Link
-                to="/chatbot"
-                className="flex items-center space-x-3 px-4 py-1 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-all duration-200 rounded-xl"
-                onClick={() => setIsOpen(false)}
-              >
-                <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex-shrink-0">
-                  <FiSettings className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                </div>
-                <div className="flex-1">
-                  <span className="font-medium block">chatbot</span>
-                </div>
-              </Link>
+              {user && user.isAdmin && (
+                <Link
+                  to="/chatbot"
+                  className="flex items-center space-x-3 px-4 py-1 text-sm text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-200 rounded-xl"
+                  onClick={() => setIsOpen(false)}
+                >
+                  <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex-shrink-0">
+                    <FiSettings className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                  </div>
+                  <div className="flex-1">
+                    <span className="font-medium block">Chatbot</span>
+                  </div>
+                </Link>
+              )}
             </div>
           </div>
 
@@ -260,7 +259,7 @@ const Navbar = () => {
                     </div>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 max-w-24 truncate">
+                    <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 max-w-24 truncate">
                       {getDisplayName()}
                     </span>
                     <FiChevronDown
@@ -278,14 +277,10 @@ const Navbar = () => {
                       animate={{ opacity: 1, scale: 1, y: 0 }}
                       exit={{ opacity: 0, scale: 0.95, y: -10 }}
                       transition={{ duration: 0.2 }}
-                      className="absolute right-0 mt-3 w-80 max-w-[calc(100vw-2rem)] bg-white/95 dark:bg-slate-800/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-slate-200/50 dark:border-slate-700/50 py-3 z-50 overflow-hidden"
-                      style={{
-                        maxHeight: "85vh",
-                        overflowY: "auto",
-                      }}
+                      className="absolute right-0 mt-3 w-80 max-w-[calc(100vw-2rem)] bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 py-3 z-50 overflow-hidden"
                     >
                       {/* Enhanced User Info Header */}
-                      <div className="px-6 py-5 bg-gradient-to-r from-blue-50/50 to-indigo-50/50 dark:from-blue-900/20 dark:to-indigo-900/20 border-b border-slate-200/50 dark:border-slate-700/50">
+                      <div className="px-6 py-5 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/50 dark:to-indigo-900/50 border-b border-slate-200 dark:border-slate-700">
                         <div className="flex items-start space-x-4">
                           <div className="relative flex-shrink-0">
                             <img
@@ -327,9 +322,9 @@ const Navbar = () => {
                       </div>
 
                       {/* Enhanced Progress Section */}
-                      <div className="px-6 py-5 border-b border-slate-200/50 dark:border-slate-700/50">
+                      <div className="px-6 py-5 border-b border-slate-200 dark:border-slate-700">
                         <div className="flex justify-between items-center mb-4">
-                          <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center">
+                          <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 flex items-center">
                             <FiTrendingUp className="w-4 h-4 mr-2 text-blue-500" />
                             Progress Overview
                           </span>
@@ -349,7 +344,7 @@ const Navbar = () => {
                       <div className="py-2">
                         <Link
                           to="/profile"
-                          className="flex items-center space-x-4 px-6 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-all duration-200 group"
+                          className="flex items-center space-x-4 px-6 py-3 text-sm text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-200 group"
                           onClick={() => setShowUserMenu(false)}
                         >
                           <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg group-hover:bg-blue-200 dark:group-hover:bg-blue-900/50 transition-colors duration-200 flex-shrink-0">
@@ -365,7 +360,7 @@ const Navbar = () => {
                         {user.isAdmin && (
                           <Link
                             to="/admin"
-                            className="flex items-center space-x-4 px-6 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-all duration-200 group"
+                            className="flex items-center space-x-4 px-6 py-3 text-sm text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-200 group"
                             onClick={() => setShowUserMenu(false)}
                           >
                             <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg group-hover:bg-purple-200 dark:group-hover:bg-purple-900/50 transition-colors duration-200 flex-shrink-0">
@@ -404,7 +399,7 @@ const Navbar = () => {
               <div className="flex items-center space-x-3">
                 <Link
                   to="/login"
-                  className="text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 font-semibold text-sm px-4 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all duration-200"
+                  className="text-slate-800 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 font-semibold text-sm px-4 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-200"
                 >
                   Login
                 </Link>
@@ -463,7 +458,7 @@ const Navbar = () => {
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.3, ease: "easeInOut" }}
-              className="md:hidden border-t border-slate-200/50 dark:border-slate-700/50 bg-white/95 dark:bg-slate-900/95 backdrop-blur-lg relative z-50"
+              className="md:hidden border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 relative z-50"
             >
               <div className="px-4 py-6 space-y-4">
                 {/* Navigation Links */}
@@ -474,8 +469,8 @@ const Navbar = () => {
                       to={link.path}
                       className={`flex items-center space-x-3 px-4 py-3 rounded-xl text-base font-medium transition-all duration-200 ${
                         isActive(link.path)
-                          ? "text-blue-600 dark:text-blue-400 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 border border-blue-200/50 dark:border-blue-700/50 shadow-sm"
-                          : "text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-slate-800/50"
+                          ? "text-blue-600 dark:text-blue-400 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 border border-blue-200 dark:border-blue-700"
+                          : "text-slate-800 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-slate-800"
                       }`}
                       onClick={() => setIsOpen(false)}
                     >
@@ -483,27 +478,27 @@ const Navbar = () => {
                       <span>{link.label}</span>
                     </Link>
                   ))}
-                  {user.isAdmin && (
+                  {user && user.isAdmin && (
                     <Link
                       to="/chatbot"
-                      className="flex items-center space-x-3 px-4 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-all duration-200 rounded-xl"
+                      className="flex items-center space-x-3 px-4 py-3 text-sm text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-200 rounded-xl"
                       onClick={() => setIsOpen(false)}
                     >
                       <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex-shrink-0">
                         <FiSettings className="w-4 h-4 text-purple-600 dark:text-purple-400" />
                       </div>
                       <div className="flex-1">
-                        <span className="font-medium block">chatbot</span>
+                        <span className="font-medium block">Chatbot</span>
                       </div>
                     </Link>
                   )}
                 </div>
 
                 {/* User Profile Section for Mobile */}
-                {user && (
-                  <div className="pt-4 border-t border-slate-200/50 dark:border-slate-700/50">
+                {user ? (
+                  <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
                     {/* User Info Header */}
-                    <div className="px-4 py-4 bg-gradient-to-r from-blue-50/50 to-indigo-50/50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl mb-4">
+                    <div className="px-4 py-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/50 dark:to-indigo-900/50 rounded-xl mb-4">
                       <div className="flex items-start space-x-4">
                         <div className="relative flex-shrink-0">
                           <img
@@ -543,9 +538,9 @@ const Navbar = () => {
                     </div>
 
                     {/* Progress Section */}
-                    <div className="px-4 py-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl mb-4">
+                    <div className="px-4 py-4 bg-slate-50 dark:bg-slate-800 rounded-xl mb-4">
                       <div className="flex justify-between items-center mb-3">
-                        <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center">
+                        <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 flex items-center">
                           <FiTrendingUp className="w-4 h-4 mr-2 text-blue-500" />
                           Progress
                         </span>
@@ -559,14 +554,13 @@ const Navbar = () => {
                         height="h-2.5"
                         className="mb-3"
                       />
-                      <div className="grid grid-cols-3 gap-3"></div>
                     </div>
 
                     {/* Menu Items */}
                     <div className="space-y-1">
                       <Link
                         to="/profile"
-                        className="flex items-center space-x-3 px-4 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-all duration-200 rounded-xl"
+                        className="flex items-center space-x-3 px-4 py-3 text-sm text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-200 rounded-xl"
                         onClick={() => setIsOpen(false)}
                       >
                         <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex-shrink-0">
@@ -579,11 +573,10 @@ const Navbar = () => {
                           </p>
                         </div>
                       </Link>
-
                       {user.isAdmin && (
                         <Link
                           to="/admin"
-                          className="flex items-center space-x-3 px-4 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-all duration-200 rounded-xl"
+                          className="flex items-center space-x-3 px-4 py-3 text-sm text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-200 rounded-xl"
                           onClick={() => setIsOpen(false)}
                         >
                           <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex-shrink-0">
@@ -615,25 +608,51 @@ const Navbar = () => {
                       </button>
                     </div>
                   </div>
-                )}
+                ) : (
+                  <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
+                    {/* Non-Logged-In User Header */}
+                    <div className="px-4 py-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/50 dark:to-indigo-900/50 rounded-xl mb-4">
+                      <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
+                        Welcome, Guest!
+                      </h3>
+                      <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                        Sign in to track your progress and access more features.
+                      </p>
+                    </div>
 
-                {/* Auth Links for Non-logged in Users */}
-                {!user && (
-                  <div className="pt-4 border-t border-slate-200/50 dark:border-slate-700/50 space-y-3">
-                    <Link
-                      to="/login"
-                      className="block px-4 py-3 rounded-xl text-base font-medium text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all duration-200"
-                      onClick={() => setIsOpen(false)}
-                    >
-                      Login
-                    </Link>
-                    <Link
-                      to="/register"
-                      className="block px-4 py-3 rounded-xl text-base font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-lg text-center"
-                      onClick={() => setIsOpen(false)}
-                    >
-                      Sign Up
-                    </Link>
+                    {/* Auth Links */}
+                    <div className="space-y-1">
+                      <Link
+                        to="/login"
+                        className="flex items-center space-x-3 px-4 py-3 text-sm text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-200 rounded-xl"
+                        onClick={() => setIsOpen(false)}
+                      >
+                        <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex-shrink-0">
+                          <FiUser className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                        </div>
+                        <div className="flex-1">
+                          <span className="font-medium block">Login</span>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                            Sign in to your account
+                          </p>
+                        </div>
+                      </Link>
+                      <Link
+                        to="/register"
+                        className="flex items-center space-x-3 px-4 py-3 text-sm text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 rounded-xl"
+                        onClick={() => setIsOpen(false)}
+                      >
+                        <div className="p-2 bg-white/20 rounded-lg flex-shrink-0">
+                          <FiUser className="w-4 h-4 text-white" />
+                        </div>
+                        <div className="flex-1">
+                          <span className="font-medium block">Sign Up</span>
+                          <p className="text-xs text-white/80 mt-0.5">
+                            Create a new account
+                          </p>
+                        </div>
+                      </Link>
+                    </div>
                   </div>
                 )}
               </div>

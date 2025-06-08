@@ -719,7 +719,7 @@ const Home = () => {
       name: "Remaining",
       value: totalRemaining,
       color: "#64748b",
-      gradient: ["#64748b", "#475569"],
+      gradient: ["#ef4444", "#dc2626"],
       icon: "📝",
     },
   ].filter((item) => item.value > 0);

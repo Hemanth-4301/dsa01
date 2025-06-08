@@ -1,6 +1,7 @@
-"use client"
+"use client";
 
-import { motion } from "framer-motion"
+import { motion } from "framer-motion";
+import "../pages/App.css";
 
 const LoadingSpinner = ({ size = "md", className = "" }) => {
   const sizeClasses = {
@@ -8,17 +9,13 @@ const LoadingSpinner = ({ size = "md", className = "" }) => {
     md: "w-8 h-8",
     lg: "w-12 h-12",
     xl: "w-16 h-16",
-  }
+  };
 
   return (
     <div className={`flex items-center justify-center ${className}`}>
-      <motion.div
-        className={`${sizeClasses[size]} border-4 border-primary-200 border-t-primary-600 rounded-full`}
-        animate={{ rotate: 360 }}
-        transition={{ duration: 1, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
-      />
+      <div class="loader"></div>
     </div>
-  )
-}
+  );
+};
 
-export default LoadingSpinner
+export default LoadingSpinner;
