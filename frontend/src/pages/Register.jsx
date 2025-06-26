@@ -30,7 +30,7 @@ const Register = () => {
   const [errors, setErrors] = useState({});
   const [step, setStep] = useState("register"); // register or verify
   const [userId, setUserId] = useState(null);
-  const [timer, setTimer] = useState(60); // 60 seconds countdown
+  const [timer, setTimer] = useState(120); // 60 seconds countdown
   const { register, verifyOTP, resendOTP, deleteUnverifiedUser } = useAuth();
   const navigate = useNavigate();
 
@@ -125,7 +125,7 @@ const Register = () => {
       if (result.success) {
         setUserId(result.userId);
         setStep("verify");
-        setTimer(60); // Reset timer on registration
+        setTimer(120); // Reset timer on registration
       } else {
         setErrors({ server: result.error });
       }
@@ -146,7 +146,7 @@ const Register = () => {
     setLoading(true);
     const result = await resendOTP(userId);
     if (result.success) {
-      setTimer(60); // Reset timer on resend
+      setTimer(120); // Reset timer on resend
     }
     setLoading(false);
   };
