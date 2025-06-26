@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import {
   FiMail,
@@ -13,19 +13,483 @@ import { useQuery } from "react-query";
 import axios from "axios";
 import { useAuth } from "../contexts/AuthContext";
 import LoadingSpinner from "../components/LoadingSpinner";
-import CalendarHeatmap from "react-calendar-heatmap";
-import "react-calendar-heatmap/dist/styles.css";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  Cell,
-} from "recharts";
+
+// Custom Floating Bubble Chart Component
+const FloatingBubbleChart = ({ data }) => {
+  const [hoveredBubble, setHoveredBubble] = useState(null);
+  const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
+  const [containerDimensions, setContainerDimensions] = useState({
+    width: 800,
+    height: 500,
+  });
+  const containerRef = useRef(null);
+
+  // Update container dimensions on resize
+  useEffect(() => {
+    const updateDimensions = () => {
+      if (containerRef.current) {
+        const rect = containerRef.current.getBoundingClientRect();
+        setContainerDimensions({ width: rect.width, height: rect.height });
+      }
+    };
+
+    updateDimensions();
+    window.addEventListener("resize", updateDimensions);
+    return () => window.removeEventListener("resize", updateDimensions);
+  }, []);
+
+  // Calculate responsive bubble sizes
+  const getResponsiveBubbleRadius = (count, screenWidth) => {
+    const maxCount = Math.max(...data.map((d) => d.count));
+    let minRadius, maxRadius;
+
+    if (screenWidth < 640) {
+      // Mobile
+      minRadius = 25;
+      maxRadius = 45;
+    } else if (screenWidth < 1024) {
+      // Tablet
+      minRadius = 35;
+      maxRadius = 65;
+    } else {
+      // Desktop
+      minRadius = 40;
+      maxRadius = 80;
+    }
+
+    return minRadius + (count / maxCount) * (maxRadius - minRadius);
+  };
+
+  // Generate responsive bubble positions
+  const generateResponsiveBubblePositions = () => {
+    const { width, height } = containerDimensions;
+    const positions = [];
+
+    // Responsive grid calculation
+    let cols, rows;
+    if (width < 640) {
+      cols = 3;
+      rows = Math.ceil(data.length / cols);
+    } else if (width < 1024) {
+      cols = 4;
+      rows = Math.ceil(data.length / cols);
+    } else {
+      cols = Math.min(5, Math.ceil(Math.sqrt(data.length)));
+      rows = Math.ceil(data.length / cols);
+    }
+
+    const cellWidth = width / cols;
+    const cellHeight = height / rows;
+    const maxRadius = getResponsiveBubbleRadius(
+      Math.max(...data.map((d) => d.count)),
+      width
+    );
+
+    data.forEach((item, index) => {
+      const row = Math.floor(index / cols);
+      const col = index % cols;
+
+      // Calculate base position
+      const baseX = (col + 0.5) * cellWidth;
+      const baseY = (row + 0.5) * cellHeight;
+
+      // Add controlled randomness for natural positioning
+      const offsetX = (Math.random() - 0.5) * (cellWidth * 0.2);
+      const offsetY = (Math.random() - 0.5) * (cellHeight * 0.2);
+
+      const radius = getResponsiveBubbleRadius(item.count, width);
+
+      positions.push({
+        x: Math.max(
+          radius + 10,
+          Math.min(width - radius - 10, baseX + offsetX)
+        ),
+        y: Math.max(
+          radius + 10,
+          Math.min(height - radius - 10, baseY + offsetY)
+        ),
+        radius,
+        floatDelay: Math.random() * 4, // Random delay for floating animation
+        floatDuration: 3 + Math.random() * 2, // Random duration between 3-5 seconds
+        waveDelay: Math.random() * 2, // Random delay for wave animation
+        ...item,
+      });
+    });
+
+    return positions;
+  };
+
+  const handleMouseMove = (event, bubble) => {
+    const rect = containerRef.current.getBoundingClientRect();
+    setTooltipPosition({
+      x: event.clientX - rect.left,
+      y: event.clientY - rect.top,
+    });
+    setHoveredBubble(bubble);
+  };
+
+  const handleMouseLeave = () => {
+    setHoveredBubble(null);
+  };
+
+  // Enhanced color palette
+  const colors = [
+    "#3b82f6",
+    "#4f46e5",
+    "#7c3aed",
+    "#9333ea",
+    "#c026d3",
+    "#db2777",
+    "#e11d48",
+    "#dc2626",
+    "#ea580c",
+    "#d97706",
+    "#ca8a04",
+    "#65a30d",
+    "#16a34a",
+    "#0d9488",
+    "#0891b2",
+    "#0284c7",
+    "#1d4ed8",
+  ];
+
+  // Generate wave path for water effect
+  const generateWavePath = (centerX, centerY, radius, waveOffset = 0) => {
+    const waveHeight = radius * 0.1;
+    const waveWidth = radius * 2;
+    const startX = centerX - radius;
+    const endX = centerX + radius;
+
+    const wave1 = Math.sin(waveOffset) * waveHeight;
+    const wave2 = Math.sin(waveOffset + Math.PI / 2) * waveHeight;
+    const wave3 = Math.sin(waveOffset + Math.PI) * waveHeight;
+    const wave4 = Math.sin(waveOffset + (3 * Math.PI) / 2) * waveHeight;
+
+    return `M ${startX} ${centerY + wave1}
+            Q ${startX + waveWidth * 0.25} ${centerY + wave2} ${centerX} ${
+      centerY + wave3
+    }
+            Q ${centerX + waveWidth * 0.25} ${centerY + wave4} ${endX} ${
+      centerY + wave1
+    }
+            L ${endX} ${centerY + radius}
+            L ${startX} ${centerY + radius}
+            Z`;
+  };
+
+  const bubblePositions = generateResponsiveBubblePositions();
+
+  return (
+    <div
+      ref={containerRef}
+      className="relative w-full h-[350px] sm:h-[450px] md:h-[500px] lg:h-[600px] xl:h-[650px] overflow-hidden rounded-xl"
+    >
+      <svg
+        width="100%"
+        height="100%"
+        className="cursor-pointer"
+        onMouseLeave={handleMouseLeave}
+      >
+        <defs>
+          {/* Gradient definitions */}
+          {data.map((_, index) => (
+            <linearGradient
+              key={`gradient-${index}`}
+              id={`gradient-${index}`}
+              x1="0%"
+              y1="100%"
+              x2="0%"
+              y2="0%"
+            >
+              <stop
+                offset="0%"
+                stopColor={colors[index % colors.length]}
+                stopOpacity="0.9"
+              />
+              <stop
+                offset="50%"
+                stopColor={colors[index % colors.length]}
+                stopOpacity="0.7"
+              />
+              <stop
+                offset="100%"
+                stopColor={colors[index % colors.length]}
+                stopOpacity="0.4"
+              />
+            </linearGradient>
+          ))}
+
+          {/* Wave gradient for water effect */}
+          {data.map((_, index) => (
+            <linearGradient
+              key={`wave-gradient-${index}`}
+              id={`wave-gradient-${index}`}
+              x1="0%"
+              y1="0%"
+              x2="0%"
+              y2="100%"
+            >
+              <stop
+                offset="0%"
+                stopColor={colors[index % colors.length]}
+                stopOpacity="0.6"
+              />
+              <stop
+                offset="100%"
+                stopColor={colors[index % colors.length]}
+                stopOpacity="0.8"
+              />
+            </linearGradient>
+          ))}
+
+          {/* Clip paths for each bubble */}
+          {bubblePositions.map((bubble, index) => (
+            <clipPath key={`clip-${index}`} id={`clip-${index}`}>
+              <circle cx={bubble.x} cy={bubble.y} r={bubble.radius - 3} />
+            </clipPath>
+          ))}
+        </defs>
+
+        {bubblePositions.map((bubble, index) => {
+          const progressPercentage =
+            bubble.count > 0 ? (bubble.solved / bubble.count) * 100 : 0;
+          const fillHeight = (progressPercentage / 100) * (bubble.radius * 1.8);
+          const waterLevel = bubble.y + bubble.radius - fillHeight;
+
+          return (
+            <g key={`${bubble.name}-${index}`}>
+              {/* Floating animation wrapper */}
+              <motion.g
+                animate={{
+                  y: [0, -8, 0],
+                  x: [0, 3, -3, 0],
+                }}
+                transition={{
+                  duration: bubble.floatDuration,
+                  delay: bubble.floatDelay,
+                  repeat: Number.POSITIVE_INFINITY,
+                  ease: "easeInOut",
+                }}
+              >
+                {/* Bubble background with subtle glow */}
+                <circle
+                  cx={bubble.x}
+                  cy={bubble.y}
+                  r={bubble.radius + 2}
+                  fill={colors[index % colors.length]}
+                  fillOpacity="0.1"
+                  className="animate-pulse"
+                />
+
+                {/* Main bubble border */}
+                <circle
+                  cx={bubble.x}
+                  cy={bubble.y}
+                  r={bubble.radius}
+                  fill="rgba(255, 255, 255, 0.1)"
+                  stroke={colors[index % colors.length]}
+                  strokeWidth="2"
+                  className="transition-all duration-300 hover:stroke-4 hover:drop-shadow-lg"
+                />
+
+                {/* Animated water fill with waves */}
+                <motion.path
+                  d={generateWavePath(bubble.x, waterLevel, bubble.radius)}
+                  fill={`url(#wave-gradient-${index})`}
+                  clipPath={`url(#clip-${index})`}
+                  animate={{
+                    d: [
+                      generateWavePath(bubble.x, waterLevel, bubble.radius, 0),
+                      generateWavePath(
+                        bubble.x,
+                        waterLevel,
+                        bubble.radius,
+                        Math.PI
+                      ),
+                      generateWavePath(
+                        bubble.x,
+                        waterLevel,
+                        bubble.radius,
+                        Math.PI * 2
+                      ),
+                    ],
+                  }}
+                  transition={{
+                    duration: 2 + bubble.waveDelay,
+                    delay: bubble.waveDelay,
+                    repeat: Number.POSITIVE_INFINITY,
+                    ease: "easeInOut",
+                  }}
+                />
+
+                {/* Additional wave layer for more realistic effect */}
+                <motion.path
+                  d={generateWavePath(bubble.x, waterLevel - 5, bubble.radius)}
+                  fill={colors[index % colors.length]}
+                  fillOpacity="0.3"
+                  clipPath={`url(#clip-${index})`}
+                  animate={{
+                    d: [
+                      generateWavePath(
+                        bubble.x,
+                        waterLevel - 5,
+                        bubble.radius,
+                        Math.PI
+                      ),
+                      generateWavePath(
+                        bubble.x,
+                        waterLevel - 5,
+                        bubble.radius,
+                        Math.PI * 2
+                      ),
+                      generateWavePath(
+                        bubble.x,
+                        waterLevel - 5,
+                        bubble.radius,
+                        Math.PI * 3
+                      ),
+                    ],
+                  }}
+                  transition={{
+                    duration: 3 + bubble.waveDelay,
+                    delay: bubble.waveDelay * 0.5,
+                    repeat: Number.POSITIVE_INFINITY,
+                    ease: "easeInOut",
+                  }}
+                />
+
+                {/* Bubble highlight effect */}
+                <ellipse
+                  cx={bubble.x - bubble.radius * 0.3}
+                  cy={bubble.y - bubble.radius * 0.3}
+                  rx={bubble.radius * 0.3}
+                  ry={bubble.radius * 0.2}
+                  fill="rgba(255, 255, 255, 0.3)"
+                  className="pointer-events-none"
+                />
+
+                {/* Interactive overlay */}
+                <circle
+                  cx={bubble.x}
+                  cy={bubble.y}
+                  r={bubble.radius}
+                  fill="transparent"
+                  className="cursor-pointer hover:fill-white hover:fill-opacity-10 transition-all duration-200"
+                  onMouseMove={(e) => handleMouseMove(e, bubble)}
+                />
+
+                {/* Category label with responsive font size */}
+                <text
+                  x={bubble.x}
+                  y={bubble.y - 8}
+                  textAnchor="middle"
+                  className="font-semibold fill-slate-700 dark:fill-slate-200 pointer-events-none select-none"
+                  style={{
+                    fontSize: Math.max(8, Math.min(14, bubble.radius / 4)),
+                    textShadow: "1px 1px 2px rgba(0,0,0,0.3)",
+                  }}
+                >
+                  {bubble.shortName}
+                </text>
+
+                {/* Progress text with responsive font size */}
+                <text
+                  x={bubble.x}
+                  y={bubble.y + 8}
+                  textAnchor="middle"
+                  className="font-bold fill-slate-800 dark:fill-slate-100 pointer-events-none select-none"
+                  style={{
+                    fontSize: Math.max(10, Math.min(16, bubble.radius / 3.5)),
+                    textShadow: "1px 1px 2px rgba(0,0,0,0.5)",
+                  }}
+                >
+                  {bubble.solved}/{bubble.count}
+                </text>
+
+                {/* Progress percentage */}
+                <text
+                  x={bubble.x}
+                  y={bubble.y + 22}
+                  textAnchor="middle"
+                  className="font-medium fill-slate-600 dark:fill-slate-300 pointer-events-none select-none"
+                  style={{
+                    fontSize: Math.max(6, Math.min(12, bubble.radius / 6)),
+                    textShadow: "1px 1px 2px rgba(0,0,0,0.3)",
+                  }}
+                >
+                  {progressPercentage.toFixed(0)}%
+                </text>
+              </motion.g>
+            </g>
+          );
+        })}
+      </svg>
+
+      {/* Enhanced Responsive Tooltip */}
+      {hoveredBubble && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8, y: 10 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.8, y: 10 }}
+          className="absolute pointer-events-none z-20 bg-white/95 dark:bg-slate-800/95 backdrop-blur-xl p-3 sm:p-4 rounded-xl sm:rounded-2xl shadow-2xl border border-slate-200/50 dark:border-slate-700/50 max-w-[280px] sm:max-w-xs"
+          style={{
+            left: Math.min(
+              tooltipPosition.x + 15,
+              containerDimensions.width - 300
+            ),
+            top: Math.max(10, tooltipPosition.y - 80),
+            transform:
+              tooltipPosition.x > containerDimensions.width * 0.7
+                ? "translateX(-100%)"
+                : "none",
+          }}
+        >
+          <h3 className="font-bold text-slate-900 dark:text-slate-100 mb-3 text-sm sm:text-base">
+            {hoveredBubble.fullName}
+          </h3>
+          <div className="space-y-2 text-xs sm:text-sm">
+            <div className="flex justify-between items-center">
+              <span className="text-slate-600 dark:text-slate-400">
+                Total Questions:
+              </span>
+              <span className="font-semibold text-blue-600 dark:text-blue-400">
+                {hoveredBubble.count}
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-slate-600 dark:text-slate-400">
+                Solved:
+              </span>
+              <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                {hoveredBubble.solved}
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-slate-600 dark:text-slate-400">
+                Progress:
+              </span>
+              <span className="font-bold text-purple-600 dark:text-purple-400">
+                {hoveredBubble.count > 0
+                  ? (
+                      (hoveredBubble.solved / hoveredBubble.count) *
+                      100
+                    ).toFixed(1)
+                  : 0}
+                %
+              </span>
+            </div>
+          </div>
+          <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-600 text-xs text-slate-500 dark:text-slate-400">
+            <span className="font-medium">
+              You solved {hoveredBubble.solved} out of {hoveredBubble.count}{" "}
+              questions
+            </span>
+          </div>
+        </motion.div>
+      )}
+    </div>
+  );
+};
 
 const Profile = () => {
   const { user } = useAuth();
@@ -57,25 +521,6 @@ const Profile = () => {
       staleTime: 5 * 60 * 1000, // 5 minutes
     }
   );
-
-  // Generate heatmap data (mock data for now)
-  const generateHeatmapData = () => {
-    const data = [];
-    const startDate = new Date();
-    startDate.setFullYear(startDate.getFullYear() - 1);
-
-    for (let i = 0; i < 365; i++) {
-      const date = new Date(startDate);
-      date.setDate(date.getDate() + i);
-      data.push({
-        date: date.toISOString().split("T")[0],
-        count: Math.floor(Math.random() * 5), // Random activity for demo
-      });
-    }
-    return data;
-  };
-
-  const heatmapData = generateHeatmapData();
 
   const tabs = [
     { id: "overview", label: "Overview", icon: FiTrendingUp },
@@ -118,8 +563,8 @@ const Profile = () => {
       })
     : [];
 
-  // Prepare data for category distribution chart with better naming
-  const categoryChartData = sortedCategories.map((category) => {
+  // Prepare data for bubble chart
+  const bubbleChartData = sortedCategories.map((category) => {
     const categoryName = category.category
       .split("-")
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
@@ -128,8 +573,8 @@ const Profile = () => {
     return {
       name: categoryName,
       shortName:
-        categoryName.length > 15
-          ? categoryName.substring(0, 12) + "..."
+        categoryName.length > 10
+          ? categoryName.substring(0, 8) + "..."
           : categoryName,
       fullName: categoryName,
       count: category.count,
@@ -139,65 +584,6 @@ const Profile = () => {
         )?.solved || 0,
     };
   });
-
-  // Enhanced category chart colors with gradients
-  const categoryColors = [
-    "#3b82f6", // blue-500
-    "#4f46e5", // indigo-600
-    "#7c3aed", // violet-600
-    "#9333ea", // purple-600
-    "#c026d3", // fuchsia-600
-    "#db2777", // pink-600
-    "#e11d48", // rose-600
-    "#dc2626", // red-600
-    "#ea580c", // orange-600
-    "#d97706", // amber-600
-    "#ca8a04", // yellow-600
-    "#65a30d", // lime-600
-    "#16a34a", // green-600
-    "#0d9488", // teal-600
-    "#0891b2", // cyan-600
-    "#0284c7", // sky-600
-    "#1d4ed8", // blue-700
-  ];
-
-  // Enhanced custom tooltip for category chart
-  const CustomCategoryTooltip = ({ active, payload, label }) => {
-    if (active && payload && payload.length) {
-      const data = payload[0].payload;
-      return (
-        <div className="bg-white/95 dark:bg-slate-800/95 backdrop-blur-lg p-4 rounded-xl shadow-xl border border-slate-200/50 dark:border-slate-700/50">
-          <p className="font-semibold text-slate-900 dark:text-slate-100 mb-2">
-            {data.fullName}
-          </p>
-          <div className="space-y-1">
-            <p className="text-sm flex items-center justify-between">
-              <span className="text-blue-600 dark:text-blue-400 flex items-center">
-                <div className="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
-                Total:
-              </span>
-              <span className="font-semibold ml-2">{payload[0].value}</span>
-            </p>
-            <p className="text-sm flex items-center justify-between">
-              <span className="text-emerald-600 dark:text-emerald-400 flex items-center">
-                <div className="w-3 h-3 bg-emerald-500 rounded-full mr-2"></div>
-                Solved:
-              </span>
-              <span className="font-semibold ml-2">
-                {payload[1]?.value || 0}
-              </span>
-            </p>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 pt-2 border-t border-slate-200 dark:border-slate-600">
-              Progress:{" "}
-              {(((payload[1]?.value || 0) / payload[0].value) * 100).toFixed(1)}
-              %
-            </p>
-          </div>
-        </div>
-      );
-    }
-    return null;
-  };
 
   if (progressLoading || categoriesLoading) {
     return (
@@ -212,7 +598,7 @@ const Profile = () => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="space-y-4 sm:space-y-6 px-4 sm:px-6 lg:px-8 py-4"
+      className="space-y-4 sm:space-y-6 px-2 sm:px-4 lg:px-6 xl:px-8 py-4"
     >
       {/* Enhanced Profile Header */}
       <div className="bg-gradient-to-br from-white/80 to-slate-50/80 dark:from-slate-800/80 dark:to-slate-900/80 backdrop-blur-sm rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-lg border border-slate-200/60 dark:border-slate-700/60">
@@ -304,173 +690,12 @@ const Profile = () => {
       >
         {activeTab === "overview" && (
           <div className="space-y-4 sm:space-y-6">
-            {/* Enhanced Activity Heatmap */}
+            {/* Floating Bubble Progress Chart */}
             <div className="bg-gradient-to-br from-white/80 to-slate-50/80 dark:from-slate-800/80 dark:to-slate-900/80 backdrop-blur-sm rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-lg border border-slate-200/60 dark:border-slate-700/60">
               <h2 className="text-lg sm:text-xl font-semibold bg-gradient-to-r from-slate-900 to-slate-700 dark:from-slate-100 dark:to-slate-300 bg-clip-text text-transparent mb-4 sm:mb-6 text-center">
-                📅 Activity Heatmap
+                🫧 Floating Progress Bubbles
               </h2>
-              <div className="overflow-x-auto -mx-2 sm:-mx-4">
-                <div className="min-w-[600px] px-2 sm:px-4">
-                  <CalendarHeatmap
-                    startDate={
-                      new Date(
-                        new Date().setFullYear(new Date().getFullYear() - 1)
-                      )
-                    }
-                    endDate={new Date()}
-                    values={heatmapData}
-                    classForValue={(value) => {
-                      if (!value) {
-                        return "color-empty";
-                      }
-                      return `color-scale-${Math.min(value.count, 4)}`;
-                    }}
-                    tooltipDataAttrs={(value) => {
-                      return {
-                        "data-tip": `${value.date}: ${
-                          value.count || 0
-                        } problems solved`,
-                      };
-                    }}
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Enhanced Category Progress Chart */}
-            <div className="bg-gradient-to-br from-white/80 to-slate-50/80 dark:from-slate-800/80 dark:to-slate-900/80 backdrop-blur-sm rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-lg border border-slate-200/60 dark:border-slate-700/60">
-              <h2 className="text-lg sm:text-xl font-semibold bg-gradient-to-r from-slate-900 to-slate-700 dark:from-slate-100 dark:to-slate-300 bg-clip-text text-transparent mb-4 sm:mb-6 text-center">
-                📊 Progress by Category
-              </h2>
-              <div className="h-[500px] sm:h-[600px] lg:h-[700px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={categoryChartData}
-                    layout="vertical"
-                    margin={{
-                      top: 20,
-                      right: 20,
-                      left: 10,
-                      bottom: 20,
-                    }}
-                    barGap={4}
-                    barSize={20}
-                  >
-                    <defs>
-                      {categoryChartData.map((_, index) => (
-                        <linearGradient
-                          key={`barGradient-${index}`}
-                          id={`barGradient-${index}`}
-                          x1="0"
-                          y1="0"
-                          x2="1"
-                          y2="0"
-                        >
-                          <stop
-                            offset="0%"
-                            stopColor={
-                              categoryColors[index % categoryColors.length]
-                            }
-                            stopOpacity={0.8}
-                          />
-                          <stop
-                            offset="100%"
-                            stopColor={
-                              categoryColors[index % categoryColors.length]
-                            }
-                            stopOpacity={1}
-                          />
-                        </linearGradient>
-                      ))}
-                      <linearGradient
-                        id="solvedGradient"
-                        x1="0"
-                        y1="0"
-                        x2="1"
-                        y2="0"
-                      >
-                        <stop
-                          offset="0%"
-                          stopColor="#10b981"
-                          stopOpacity={0.8}
-                        />
-                        <stop
-                          offset="100%"
-                          stopColor="#059669"
-                          stopOpacity={1}
-                        />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid
-                      strokeDasharray="3 3"
-                      stroke="#e2e8f0"
-                      strokeOpacity={0.3}
-                      horizontal={true}
-                      vertical={false}
-                    />
-                    <XAxis
-                      type="number"
-                      tickLine={false}
-                      axisLine={{ stroke: "#e2e8f0", strokeOpacity: 0.3 }}
-                      tick={{ fill: "#64748b", fontSize: 12 }}
-                      domain={[0, "dataMax + 2"]}
-                    />
-                    <YAxis
-                      dataKey="name"
-                      type="category"
-                      width={120}
-                      tick={{
-                        fill: "#64748b",
-                        fontSize: 11,
-                        textAnchor: "end",
-                      }}
-                      tickFormatter={(value) => {
-                        // Find the full name for this category
-                        const category = categoryChartData.find(
-                          (cat) => cat.name === value
-                        );
-                        return category ? category.fullName : value;
-                      }}
-                      axisLine={{ stroke: "#e2e8f0", strokeOpacity: 0.3 }}
-                      tickLine={false}
-                      interval={0}
-                    />
-                    <Tooltip content={<CustomCategoryTooltip />} />
-                    <Legend
-                      verticalAlign="top"
-                      height={40}
-                      iconType="circle"
-                      iconSize={10}
-                      formatter={(value) => (
-                        <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                          {value}
-                        </span>
-                      )}
-                    />
-                    <Bar
-                      dataKey="count"
-                      name="Total"
-                      radius={[0, 6, 6, 0]}
-                      className="drop-shadow-sm"
-                    >
-                      {categoryChartData.map((_, index) => (
-                        <Cell
-                          key={`cell-${index}`}
-                          fill={`url(#barGradient-${index})`}
-                          className="hover:opacity-90 transition-opacity duration-200"
-                        />
-                      ))}
-                    </Bar>
-                    <Bar
-                      dataKey="solved"
-                      name="Solved"
-                      fill="url(#solvedGradient)"
-                      radius={[0, 6, 6, 0]}
-                      className="drop-shadow-sm"
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
+              <FloatingBubbleChart data={bubbleChartData} />
             </div>
           </div>
         )}

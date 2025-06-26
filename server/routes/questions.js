@@ -85,6 +85,130 @@ router.get("/:id", async (req, res) => {
   }
 });
 
+// Create a new question
+router.post("/", async (req, res) => {
+  try {
+    const questionData = req.body;
+
+    // Validate required fields
+    const requiredFields = [
+      "problem",
+      "category",
+      "difficulty",
+      "leetcodeLink",
+      "description",
+    ];
+    for (const field of requiredFields) {
+      if (!questionData[field]) {
+        return res.status(400).json({
+          error: {
+            message: `Missing required field: ${field}`,
+            code: "VALIDATION_ERROR",
+          },
+        });
+      }
+    }
+
+    const question = new Question(questionData);
+    await question.save();
+
+    res.status(201).json({
+      message: "Question created successfully",
+      question,
+    });
+  } catch (error) {
+    console.error("Create question error:", error);
+    res.status(500).json({
+      error: {
+        message: "Failed to create question",
+        code: "CREATE_ERROR",
+      },
+    });
+  }
+});
+
+// Update a question
+router.put("/:id", async (req, res) => {
+  try {
+    const questionData = req.body;
+
+    // Validate required fields
+    const requiredFields = [
+      "problem",
+      "category",
+      "difficulty",
+      "leetcodeLink",
+      "description",
+    ];
+    for (const field of requiredFields) {
+      if (!questionData[field]) {
+        return res.status(400).json({
+          error: {
+            message: `Missing required field: ${field}`,
+            code: "VALIDATION_ERROR",
+          },
+        });
+      }
+    }
+
+    const question = await Question.findByIdAndUpdate(
+      req.params.id,
+      { $set: questionData },
+      { new: true, runValidators: true }
+    );
+
+    if (!question) {
+      return res.status(404).json({
+        error: {
+          message: "Question not found",
+          code: "NOT_FOUND",
+        },
+      });
+    }
+
+    res.json({
+      message: "Question updated successfully",
+      question,
+    });
+  } catch (error) {
+    console.error("Update question error:", error);
+    res.status(500).json({
+      error: {
+        message: "Failed to update question",
+        code: "UPDATE_ERROR",
+      },
+    });
+  }
+});
+
+// Delete a question
+router.delete("/:id", async (req, res) => {
+  try {
+    const question = await Question.findByIdAndDelete(req.params.id);
+
+    if (!question) {
+      return res.status(404).json({
+        error: {
+          message: "Question not found",
+          code: "NOT_FOUND",
+        },
+      });
+    }
+
+    res.json({
+      message: "Question deleted successfully",
+    });
+  } catch (error) {
+    console.error("Delete question error:", error);
+    res.status(500).json({
+      error: {
+        message: "Failed to delete question",
+        code: "DELETE_ERROR",
+      },
+    });
+  }
+});
+
 // Get categories with counts
 router.get("/stats/categories", async (req, res) => {
   try {

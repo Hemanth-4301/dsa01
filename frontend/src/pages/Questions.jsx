@@ -78,7 +78,7 @@ const Questions = () => {
     return difficultyOrder[a.difficulty] - difficultyOrder[b.difficulty];
   });
 
-  const { data: progressData } = useQuery(
+  const { data: progressData, isLoading: progressLoading } = useQuery(
     "userProgress",
     () => axios.get("/api/progress").then((res) => res.data),
     {
@@ -135,14 +135,25 @@ const Questions = () => {
   };
 
   const getProgressForQuestion = (questionId) => {
-    return progressData?.progress?.find((p) => p.questionId._id === questionId);
+    // Check if progressData and progressData.progress exist
+    if (
+      !progressData ||
+      !progressData.progress ||
+      !Array.isArray(progressData.progress)
+    ) {
+      return null; // Return null if progress data is not available
+    }
+    return (
+      progressData.progress.find((p) => p.questionId?._id === questionId) ||
+      null
+    );
   };
 
   const categories = categoriesData?.categories || [];
   const difficulties = ["Easy", "Medium", "Hard"];
 
   return (
-    <div className="min-h-screen ">
+    <div className="min-h-screen">
       <div className="container mx-auto px-3 py-4 max-w-7xl">
         {/* Header */}
         <motion.div
@@ -283,7 +294,7 @@ const Questions = () => {
         </motion.div>
 
         {/* Questions Grid/List */}
-        {questionsLoading ? (
+        {questionsLoading || (user && progressLoading) ? (
           <div className="flex justify-center py-16">
             <LoadingSpinner size="lg" />
           </div>
