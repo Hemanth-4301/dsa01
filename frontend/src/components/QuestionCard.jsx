@@ -155,7 +155,7 @@ const QuestionCard = ({ question, progress, onToggleStar, onToggleStatus }) => {
           >
             {isSolved ? "Solved ✓" : "Mark as Solved"}
           </motion.button>
-
+          {/* 
           <motion.a
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
@@ -166,7 +166,7 @@ const QuestionCard = ({ question, progress, onToggleStar, onToggleStatus }) => {
           >
             <span>LeetCode</span>
             <FiExternalLink className="w-3 h-3" />
-          </motion.a>
+          </motion.a> */}
         </div>
       </div>
     </motion.div>

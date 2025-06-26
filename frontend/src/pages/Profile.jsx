@@ -117,7 +117,7 @@ const FloatingBubbleChart = memo(({ data }) => {
     handleMouseMove.cancel();
   };
 
-  const colors = [
+  const bubbleColors = [
     "#3b82f6",
     "#4f46e5",
     "#7c3aed",
@@ -137,8 +137,28 @@ const FloatingBubbleChart = memo(({ data }) => {
     "#1d4ed8",
   ];
 
+  const waterColors = [
+    "#60a5fa",
+    "#7f9cf5",
+    "#a78bfa",
+    "#c084fc",
+    "#d946ef",
+    "#ec4899",
+    "#f87171",
+    "#ef4444",
+    "#fb923c",
+    "#f59e0b",
+    "#eab308",
+    "#84cc16",
+    "#22c55e",
+    "#14c4b2",
+    "#22d3ee",
+    "#38bdf8",
+    "#3b82f6",
+  ];
+
   const generateWavePath = (centerX, centerY, radius, waveOffset = 0) => {
-    const waveHeight = radius * 0.08;
+    const waveHeight = radius * 0.1;
     const waveWidth = radius * 2;
     const startX = centerX - radius;
     const endX = centerX + radius;
@@ -181,13 +201,13 @@ const FloatingBubbleChart = memo(({ data }) => {
             >
               <stop
                 offset="0%"
-                stopColor={colors[index % colors.length]}
-                stopOpacity="0.9"
+                stopColor={bubbleColors[index % bubbleColors.length]}
+                stopOpacity="0.15"
               />
               <stop
                 offset="100%"
-                stopColor={colors[index % colors.length]}
-                stopOpacity="0.6"
+                stopColor={bubbleColors[index % bubbleColors.length]}
+                stopOpacity="0.3"
               />
             </linearGradient>
           ))}
@@ -202,13 +222,13 @@ const FloatingBubbleChart = memo(({ data }) => {
             >
               <stop
                 offset="0%"
-                stopColor={colors[index % colors.length]}
-                stopOpacity="0.7"
+                stopColor={waterColors[index % waterColors.length]}
+                stopOpacity="0.8"
               />
               <stop
                 offset="100%"
-                stopColor={colors[index % colors.length]}
-                stopOpacity="0.9"
+                stopColor={waterColors[index % waterColors.length]}
+                stopOpacity="1"
               />
             </linearGradient>
           ))}
@@ -217,6 +237,23 @@ const FloatingBubbleChart = memo(({ data }) => {
               <circle cx={bubble.x} cy={bubble.y} r={bubble.radius - 2} />
             </clipPath>
           ))}
+          <filter
+            id="water-shadow"
+            x="-50%"
+            y="-50%"
+            width="200%"
+            height="200%"
+          >
+            <feGaussianBlur in="SourceAlpha" stdDeviation="2" />
+            <feOffset dx="0" dy="2" result="offsetblur" />
+            <feComponentTransfer>
+              <feFuncA type="linear" slope="0.3" />
+            </feComponentTransfer>
+            <feMerge>
+              <feMergeNode />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
         </defs>
 
         {generateResponsiveBubblePositions.map((bubble, index) => {
@@ -244,14 +281,15 @@ const FloatingBubbleChart = memo(({ data }) => {
                   cy={bubble.y}
                   r={bubble.radius}
                   fill={`url(#gradient-${index})`}
-                  stroke={colors[index % colors.length]}
-                  strokeWidth="1.5"
-                  className="transition-all duration-200 hover:stroke-[2.5px] hover:drop-shadow-md"
+                  stroke={bubbleColors[index % bubbleColors.length]}
+                  strokeWidth="2"
+                  className="transition-all duration-200 hover:stroke-[3px] hover:drop-shadow-lg"
                 />
                 <motion.path
                   d={generateWavePath(bubble.x, waterLevel, bubble.radius)}
                   fill={`url(#wave-gradient-${index})`}
                   clipPath={`url(#clip-${index})`}
+                  filter="url(#water-shadow)"
                   animate={{
                     d: [
                       generateWavePath(bubble.x, waterLevel, bubble.radius, 0),
@@ -259,12 +297,24 @@ const FloatingBubbleChart = memo(({ data }) => {
                         bubble.x,
                         waterLevel,
                         bubble.radius,
+                        Math.PI / 2
+                      ),
+                      generateWavePath(
+                        bubble.x,
+                        waterLevel,
+                        bubble.radius,
                         Math.PI
+                      ),
+                      generateWavePath(
+                        bubble.x,
+                        waterLevel,
+                        bubble.radius,
+                        Math.PI * 1.5
                       ),
                     ],
                   }}
                   transition={{
-                    duration: 1.5,
+                    duration: 2,
                     delay: bubble.waveDelay,
                     repeat: Number.POSITIVE_INFINITY,
                     ease: "easeInOut",
@@ -275,14 +325,14 @@ const FloatingBubbleChart = memo(({ data }) => {
                   cy={bubble.y}
                   r={bubble.radius}
                   fill="transparent"
-                  className="cursor-pointer transition-colors duration-150 hover:fill-white/10"
+                  className="cursor-pointer transition-colors duration-150 hover:fill-white/5"
                   onMouseMove={(e) => handleMouseMove(e, bubble)}
                 />
                 <text
                   x={bubble.x}
                   y={bubble.y - 6}
                   textAnchor="middle"
-                  className="font-semibold fill-slate-700 dark:fill-slate-200 pointer-events-none"
+                  className="font-semibold fill-slate-800 dark:fill-slate-100 pointer-events-none"
                   style={{
                     fontSize: Math.max(8, Math.min(12, bubble.radius / 4)),
                   }}
@@ -293,7 +343,7 @@ const FloatingBubbleChart = memo(({ data }) => {
                   x={bubble.x}
                   y={bubble.y + 6}
                   textAnchor="middle"
-                  className="font-bold fill-slate-800 dark:fill-slate-100 pointer-events-none"
+                  className="font-bold fill-slate-900 dark:fill-white pointer-events-none"
                   style={{
                     fontSize: Math.max(9, Math.min(14, bubble.radius / 3.5)),
                   }}
@@ -313,7 +363,7 @@ const FloatingBubbleChart = memo(({ data }) => {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="absolute pointer-events-none z-20 bg-white/90 dark:bg-slate-800/90 backdrop-blur-md p-3 rounded-lg shadow-lg border border-slate-200/40 dark:border-slate-700/40 max-w-[250px]"
+            className="absolute pointer-events-none z-20 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md p-3 rounded-lg shadow-lg border border-slate-200/50 dark:border-slate-700/50 max-w-[250px]"
             style={{
               left: Math.min(
                 tooltipPosition.x + 10,
@@ -326,7 +376,7 @@ const FloatingBubbleChart = memo(({ data }) => {
                   : "none",
             }}
           >
-            <h3 className="font-semibold text-slate-900 dark:text-slate-100 text-sm mb-2">
+            <h3 className="font-semibold text-slate-900 dark:text-white text-sm mb-2">
               {hoveredBubble.fullName}
             </h3>
             <div className="space-y-1 text-xs">
