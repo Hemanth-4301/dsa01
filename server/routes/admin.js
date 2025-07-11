@@ -1,13 +1,13 @@
-import express from "express"
-import { body, validationResult } from "express-validator"
-import rateLimit from "express-rate-limit"
-import User from "../models/User.js"
-import Question from "../models/Question.js"
-import UserProgress from "../models/UserProgress.js"
-import AdminLog from "../models/AdminLog.js"
-import { authenticateToken, requireAdmin } from "../middleware/auth.js"
+import express from "express";
+import { body, validationResult } from "express-validator";
+import rateLimit from "express-rate-limit";
+import User from "../models/User.js";
+import Question from "../models/Question.js";
+import UserProgress from "../models/UserProgress.js";
+import AdminLog from "../models/AdminLog.js";
+import { authenticateToken, requireAdmin } from "../middleware/auth.js";
 
-const router = express.Router()
+const router = express.Router();
 
 // Rate limiting for admin login
 const adminAuthLimiter = rateLimit({
@@ -19,15 +19,19 @@ const adminAuthLimiter = rateLimit({
       code: "RATE_LIMIT_EXCEEDED",
     },
   },
-})
+});
 
 // Admin login (separate from regular auth)
 router.post(
   "/login",
-  [adminAuthLimiter, body("email").isEmail().normalizeEmail(), body("password").exists()],
+  [
+    adminAuthLimiter,
+    body("email").isEmail().normalizeEmail(),
+    body("password").exists(),
+  ],
   async (req, res) => {
     try {
-      const errors = validationResult(req)
+      const errors = validationResult(req);
       if (!errors.isEmpty()) {
         return res.status(400).json({
           error: {
@@ -35,10 +39,10 @@ router.post(
             code: "VALIDATION_ERROR",
             details: errors.array(),
           },
-        })
+        });
       }
 
-      const { email, password } = req.body
+      const { email, password } = req.body;
 
       // Find admin user
       const user = await User.findOne({
@@ -46,7 +50,7 @@ router.post(
         authProvider: "email",
         isAdmin: true,
         isActive: true,
-      })
+      });
 
       if (!user) {
         return res.status(401).json({
@@ -54,83 +58,94 @@ router.post(
             message: "Invalid admin credentials",
             code: "INVALID_CREDENTIALS",
           },
-        })
+        });
       }
 
       // Check password
-      const isValidPassword = await user.comparePassword(password)
+      const isValidPassword = await user.comparePassword(password);
       if (!isValidPassword) {
         return res.status(401).json({
           error: {
             message: "Invalid admin credentials",
             code: "INVALID_CREDENTIALS",
           },
-        })
+        });
       }
 
       // Generate tokens (same as regular auth)
-      const jwt = await import("jsonwebtoken")
-      const accessToken = jwt.default.sign({ userId: user._id, role: "admin" }, process.env.JWT_SECRET, {
-        expiresIn: "15m",
-      })
+      const jwt = await import("jsonwebtoken");
+      const accessToken = jwt.default.sign(
+        { userId: user._id, role: "admin" },
+        process.env.JWT_SECRET,
+        {
+          expiresIn: "15m",
+        }
+      );
 
-      const refreshToken = jwt.default.sign({ userId: user._id, role: "admin" }, process.env.JWT_SECRET, {
-        expiresIn: "7d",
-      })
+      const refreshToken = jwt.default.sign(
+        { userId: user._id, role: "admin" },
+        process.env.JWT_SECRET,
+        {
+          expiresIn: "30d",
+        }
+      );
 
       // Save refresh token
-      user.refreshToken = refreshToken
-      await user.save()
+      user.refreshToken = refreshToken;
+      await user.save();
 
       // Log admin login
       await AdminLog.create({
         adminId: user._id,
         action: "login",
         details: `Admin login from IP: ${req.ip}`,
-      })
+      });
 
       res.json({
         message: "Admin login successful",
         user,
         accessToken,
         refreshToken,
-      })
+      });
     } catch (error) {
-      console.error("Admin login error:", error)
+      console.error("Admin login error:", error);
       res.status(500).json({
         error: {
           message: "Internal server error",
           code: "INTERNAL_ERROR",
         },
-      })
+      });
     }
-  },
-)
+  }
+);
 
 // All other routes require admin authentication
-router.use(authenticateToken)
-router.use(requireAdmin)
+router.use(authenticateToken);
+router.use(requireAdmin);
 
 // Get all users
 router.get("/users", async (req, res) => {
   try {
-    const { search, page = 1, limit = 20 } = req.query
+    const { search, page = 1, limit = 20 } = req.query;
 
     // Build query
-    const query = {}
+    const query = {};
     if (search) {
-      query.$or = [{ name: { $regex: search, $options: "i" } }, { email: { $regex: search, $options: "i" } }]
+      query.$or = [
+        { name: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } },
+      ];
     }
 
-    const skip = (Number.parseInt(page) - 1) * Number.parseInt(limit)
+    const skip = (Number.parseInt(page) - 1) * Number.parseInt(limit);
 
     const users = await User.find(query)
       .select("-password -refreshToken")
       .skip(skip)
       .limit(Number.parseInt(limit))
-      .sort({ createdAt: -1 })
+      .sort({ createdAt: -1 });
 
-    const total = await User.countDocuments(query)
+    const total = await User.countDocuments(query);
 
     res.json({
       users,
@@ -139,36 +154,36 @@ router.get("/users", async (req, res) => {
         pages: Math.ceil(total / Number.parseInt(limit)),
         total,
       },
-    })
+    });
   } catch (error) {
-    console.error("Get users error:", error)
+    console.error("Get users error:", error);
     res.status(500).json({
       error: {
         message: "Failed to fetch users",
         code: "FETCH_ERROR",
       },
-    })
+    });
   }
-})
+});
 
 // Get user progress
 router.get("/users/:id/progress", async (req, res) => {
   try {
-    const { id } = req.params
+    const { id } = req.params;
 
-    const user = await User.findById(id).select("-password -refreshToken")
+    const user = await User.findById(id).select("-password -refreshToken");
     if (!user) {
       return res.status(404).json({
         error: {
           message: "User not found",
           code: "NOT_FOUND",
         },
-      })
+      });
     }
 
     const progress = await UserProgress.find({ userId: id })
       .populate("questionId", "problem category difficulty")
-      .sort({ lastAttempted: -1 })
+      .sort({ lastAttempted: -1 });
 
     // Calculate stats
     const stats = await UserProgress.aggregate([
@@ -187,38 +202,38 @@ router.get("/users/:id/progress", async (req, res) => {
           },
         },
       },
-    ])
+    ]);
 
     res.json({
       user,
       progress,
       stats: stats[0] || { totalSolved: 0, totalAttempted: 0, totalStarred: 0 },
-    })
+    });
   } catch (error) {
-    console.error("Get user progress error:", error)
+    console.error("Get user progress error:", error);
     res.status(500).json({
       error: {
         message: "Failed to fetch user progress",
         code: "FETCH_ERROR",
       },
-    })
+    });
   }
-})
+});
 
 // Update user status
 router.patch("/users/:id", async (req, res) => {
   try {
-    const { id } = req.params
-    const { isActive } = req.body
+    const { id } = req.params;
+    const { isActive } = req.body;
 
-    const user = await User.findById(id)
+    const user = await User.findById(id);
     if (!user) {
       return res.status(404).json({
         error: {
           message: "User not found",
           code: "NOT_FOUND",
         },
-      })
+      });
     }
 
     // Prevent deactivating the main admin
@@ -228,45 +243,45 @@ router.patch("/users/:id", async (req, res) => {
           message: "Cannot deactivate main admin account",
           code: "FORBIDDEN_ACTION",
         },
-      })
+      });
     }
 
-    user.isActive = isActive
-    await user.save()
+    user.isActive = isActive;
+    await user.save();
 
     // Log admin action
     await AdminLog.create({
       adminId: req.user._id,
       action: isActive ? "activate_user" : "deactivate_user",
       details: `${isActive ? "Activated" : "Deactivated"} user: ${user.email}`,
-    })
+    });
 
     res.json({
       message: `User ${isActive ? "activated" : "deactivated"} successfully`,
       user: user.toJSON(),
-    })
+    });
   } catch (error) {
-    console.error("Update user error:", error)
+    console.error("Update user error:", error);
     res.status(500).json({
       error: {
         message: "Failed to update user",
         code: "UPDATE_ERROR",
       },
-    })
+    });
   }
-})
+});
 
 // Get platform analytics
 router.get("/analytics", async (req, res) => {
   try {
     // Basic stats
-    const totalUsers = await User.countDocuments()
-    const activeUsers = await User.countDocuments({ isActive: true })
-    const totalQuestions = await Question.countDocuments()
+    const totalUsers = await User.countDocuments();
+    const activeUsers = await User.countDocuments({ isActive: true });
+    const totalQuestions = await Question.countDocuments();
 
     // User registration over time (last 30 days)
-    const thirtyDaysAgo = new Date()
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
     const userRegistrations = await User.aggregate([
       { $match: { createdAt: { $gte: thirtyDaysAgo } } },
@@ -279,7 +294,7 @@ router.get("/analytics", async (req, res) => {
         },
       },
       { $sort: { _id: 1 } },
-    ])
+    ]);
 
     // Category popularity
     const categoryStats = await UserProgress.aggregate([
@@ -300,7 +315,7 @@ router.get("/analytics", async (req, res) => {
         },
       },
       { $sort: { solvedCount: -1 } },
-    ])
+    ]);
 
     // Top performers
     const topPerformers = await UserProgress.aggregate([
@@ -329,7 +344,7 @@ router.get("/analytics", async (req, res) => {
           solvedCount: 1,
         },
       },
-    ])
+    ]);
 
     res.json({
       overview: {
@@ -340,16 +355,16 @@ router.get("/analytics", async (req, res) => {
       userRegistrations,
       categoryStats,
       topPerformers,
-    })
+    });
   } catch (error) {
-    console.error("Get analytics error:", error)
+    console.error("Get analytics error:", error);
     res.status(500).json({
       error: {
         message: "Failed to fetch analytics",
         code: "FETCH_ERROR",
       },
-    })
+    });
   }
-})
+});
 
-export default router
+export default router;
