@@ -59,6 +59,74 @@ router.get("/", async (req, res) => {
   }
 });
 
+// Get recommended/related questions based on tags
+router.get("/:id/related", async (req, res) => {
+  try {
+    const question = await Question.findById(req.params.id);
+
+    if (!question) {
+      return res.status(404).json({
+        error: {
+          message: "Question not found",
+          code: "NOT_FOUND",
+        },
+      });
+    }
+
+    // Find related questions based on shared tags and category
+    const relatedQuestions = await Question.find({
+      _id: { $ne: req.params.id }, // Exclude current question
+      $or: [
+        { tags: { $in: question.tags || [] } }, // Match any tags
+        { category: question.category }, // Or same category
+      ],
+    })
+      .select("problem category difficulty tags leetcodeLink")
+      .limit(6)
+      .sort({ createdAt: -1 });
+
+    // Calculate relevance score for each question
+    const questionsWithScore = relatedQuestions.map((q) => {
+      let score = 0;
+
+      // Points for matching tags
+      const matchingTags = q.tags.filter((tag) => question.tags?.includes(tag));
+      score += matchingTags.length * 3;
+
+      // Points for same category
+      if (q.category === question.category) {
+        score += 2;
+      }
+
+      // Points for same difficulty (prefer similar difficulty)
+      if (q.difficulty === question.difficulty) {
+        score += 1;
+      }
+
+      return {
+        ...q.toObject(),
+        relevanceScore: score,
+        matchingTags,
+      };
+    });
+
+    // Sort by relevance score and take top 5
+    const sortedQuestions = questionsWithScore
+      .sort((a, b) => b.relevanceScore - a.relevanceScore)
+      .slice(0, 5);
+
+    res.json({ relatedQuestions: sortedQuestions });
+  } catch (error) {
+    console.error("Get related questions error:", error);
+    res.status(500).json({
+      error: {
+        message: "Failed to fetch related questions",
+        code: "FETCH_ERROR",
+      },
+    });
+  }
+});
+
 // Get single question
 router.get("/:id", async (req, res) => {
   try {

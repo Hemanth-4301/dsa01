@@ -19,6 +19,7 @@ import ReactMarkdown from "react-markdown";
 import { useAuth } from "../contexts/AuthContext";
 import CodeTabs from "../components/CodeTabs";
 import LoadingSpinner from "../components/LoadingSpinner";
+import RelatedQuestions from "../components/RelatedQuestions";
 
 const QuestionDetail = () => {
   const { id } = useParams();
@@ -39,6 +40,15 @@ const QuestionDetail = () => {
     {
       enabled: !!user,
       select: (data) => data.progress?.find((p) => p.questionId._id === id),
+    }
+  );
+
+  const { data: relatedData, isLoading: relatedLoading } = useQuery(
+    ["relatedQuestions", id],
+    () => axios.get(`/api/questions/${id}/related`).then((res) => res.data),
+    {
+      staleTime: 10 * 60 * 1000,
+      enabled: !!questionData?.question,
     }
   );
 
@@ -365,6 +375,11 @@ const QuestionDetail = () => {
               </div>
             </motion.div>
           </div>
+
+          {/* Related Questions Section */}
+          {!relatedLoading && relatedData?.relatedQuestions?.length > 0 && (
+            <RelatedQuestions questions={relatedData.relatedQuestions} />
+          )}
         </motion.div>
       </div>
     </div>
