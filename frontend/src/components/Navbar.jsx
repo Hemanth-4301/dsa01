@@ -207,7 +207,6 @@ const Navbar = () => {
                   )}
                 </Link>
               ))}
-              {user && user.isAdmin && (
                 <Link
                   to="/chatbot"
                   className="flex items-center space-x-3 px-4 py-1 text-sm text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-200 rounded-xl"
@@ -220,7 +219,6 @@ const Navbar = () => {
                     <span className="font-medium block">Chatbot</span>
                   </div>
                 </Link>
-              )}
             </div>
           </div>
 

@@ -52,6 +52,19 @@ const QuestionDetail = () => {
     }
   );
 
+  // New: fetch recommendations from the Python Flask KNN recommender service
+  const { data: knnData, isLoading: knnLoading } = useQuery(
+    ["knnRecommendations", id],
+    () =>
+      axios
+        .get(`http://localhost:8000/recommend/${id}?n=3`)
+        .then((res) => res.data),
+    {
+      enabled: !!questionData?.question,
+      staleTime: 5 * 60 * 1000,
+    }
+  );
+
   const updateProgressMutation = useMutation(
     (updates) => axios.patch(`/api/progress/${id}`, updates),
     {
@@ -376,10 +389,12 @@ const QuestionDetail = () => {
             </motion.div>
           </div>
 
-          {/* Related Questions Section */}
-          {!relatedLoading && relatedData?.relatedQuestions?.length > 0 && (
+          {/* Related Questions Section: prefer server related, fall back to KNN recommender */}
+          {!relatedLoading && relatedData?.relatedQuestions?.length > 0 ? (
             <RelatedQuestions questions={relatedData.relatedQuestions} />
-          )}
+          ) : !knnLoading && knnData?.recommendations?.length > 0 ? (
+            <RelatedQuestions questions={knnData.recommendations} />
+          ) : null}
         </motion.div>
       </div>
     </div>
